@@ -3,7 +3,11 @@ import path from 'path';
 import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
-
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeStringify from 'rehype-stringify';
 // [비즈니스 로직 의도]: 블로그 폴더의 절대 경로를 미리 계산해 둡니다.
 // process.cwd()는 현재 Node.js 프로세스가 실행되는 위치(프로젝트 최상단)를 반환합니다.
 const postsDirectory = path.join(process.cwd(), 'posts');
@@ -69,8 +73,11 @@ export async function getPostData(id: string) {
   // [비즈니스 로직 의도]: remark 라이브러리를 사용하여 순수 마크다운 텍스트를 HTML 태그로 변환합니다.
   // 이 과정은 비동기(async)로 이루어지므로 await 키워드가 필요합니다.
   const processedContent = await remark()
-    .use(html)
-    .process(matterResult.content);
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
+    .process(matterResult.content);    
   
   const contentHtml = processedContent.toString();
 

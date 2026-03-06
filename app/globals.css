@@ -89,3 +89,43 @@ body {
 .post-content p {
   margin-bottom: 1rem;
 }
+
+/* --- 글로벌 레이아웃 스타일 --- */
+.global-nav {
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky; /* 스크롤을 내려도 메뉴바가 위에 붙어있게 합니다. */
+  top: 0;
+}
+
+.nav-container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 1rem 20px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.nav-logo:hover {
+  color: var(--accent-color);
+}
+
+.page-wrapper {
+  min-height: calc(100vh - 150px); /* 화면 중간 콘텐츠가 짧아도 푸터가 바닥에 있게 방어합니다. */
+}
+
+.global-footer {
+  text-align: center;
+  padding: 2rem 20px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-top: 4rem;
+}
