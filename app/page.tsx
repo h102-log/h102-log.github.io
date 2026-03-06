@@ -1,65 +1,47 @@
-import Image from "next/image";
+import Link from 'next/link';
+// [주의사항/Edge Case]: 가져오는 경로(path)는 프로젝트 구조에 따라 약간 다를 수 있습니다.
+// src 폴더를 사용 중이시라면 '../lib/posts' 혹은 '@/lib/posts' 로 맞춰주세요.
+import { getAllPostsData } from '../src/lib/posts'; 
 
-export default function Home() {
+// [비즈니스 로직 의도]: 서버 컴포넌트는 async/await를 직접 사용할 수 있습니다.
+// 빌드 타임에 이 함수가 실행되어 데이터를 모두 가져온 후 정적 HTML을 생성합니다.
+export default async function Home() {
+  // 1. 작성해둔 유틸리티 함수를 호출하여 전체 포스트 데이터를 가져옵니다.
+  const allPosts = getAllPostsData();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    // [디자인 컨벤션]: CSS 클래스명은 규칙에 따라 'kebab-case'를 사용합니다.
+    <main className="main-container">
+      <header className="blog-header">
+        <h1>bh102님의 기술 블로그</h1>
+        <p>프론트엔드 개발자 bh102의 성장 기록 공간, h102-log 입니다.</p>
+      </header>
+
+      <section className="post-list-section">
+        <h2>최근 작성한 글</h2>
+        
+        {/* [주의사항/Edge Case 방어]: 로컬에 마크다운 파일이 하나도 없을 경우, 
+            화면이 깨지거나 빈 공간이 나오지 않도록 친절한 안내 메시지를 렌더링합니다. */}
+        {allPosts.length === 0 ? (
+          <div className="empty-post-message">
+            <p>아직 작성된 글이 없습니다. 첫 번째 포스트를 작성해 보세요!</p>
+          </div>
+        ) : (
+          <ul className="post-list">
+            {allPosts.map((post) => (
+              <li key={post.id} className="post-item">
+                {/* [비즈니스 로직 의도]: Next.js의 <Link> 컴포넌트를 사용하면 
+                    새로고침 없이 아주 부드럽고 빠르게 페이지를 이동(Client-side navigation)할 수 있습니다. */}
+                <Link href={`/posts/${post.id}`} className="post-link">
+                  <h3 className="post-title">{post.title}</h3>
+                  <p className="post-date">{post.date}</p>
+                  <p className="post-description">{post.description}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </main>
   );
 }

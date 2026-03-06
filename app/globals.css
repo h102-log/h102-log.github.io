@@ -1,26 +1,91 @@
-@import "tailwindcss";
-
+/* [비즈니스 로직 의도]: CSS 변수(Variables)를 사용하여 테마 색상을 한 곳에서 관리합니다. 
+   나중에 다크모드를 도입할 때 아주 유용하게 쓰이는 실무 테크닉입니다. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background-color: #fcfcfc;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --accent-color: #3182ce;
+  --border-color: #eaeaea;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* [주의사항/Edge Case 방어]: 브라우저마다 기본 여백이 다르므로 초기화해 줍니다. */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* [비즈니스 로직 의도]: 블로그 전체 콘텐츠가 화면 한가운데에 오도록 중앙 정렬하고, 
+   모바일 화면(Edge Case)에서도 깨지지 않도록 최대 너비(max-width)를 제한합니다. */
+.main-container, .post-detail-container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* 메인 페이지 헤더 스타일 */
+.blog-header {
+  margin-bottom: 3rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.blog-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.blog-header p {
+  color: var(--text-secondary);
+}
+
+/* 리스트 스타일 */
+.post-list {
+  list-style: none;
+}
+
+.post-item {
+  margin-bottom: 2rem;
+}
+
+/* [비즈니스 로직 의도]: 링크에 마우스를 올렸을 때(hover) 색상이 부드럽게 변하도록 트랜지션을 줍니다. */
+.post-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.post-link:hover .post-title {
+  color: var(--accent-color);
+}
+
+.post-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.post-date {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* 상세 페이지 본문 (마크다운 파싱 결과물) 스타일 */
+.post-content h1, 
+.post-content h2, 
+.post-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.post-content p {
+  margin-bottom: 1rem;
 }
