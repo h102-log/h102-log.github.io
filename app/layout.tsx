@@ -40,6 +40,20 @@ export default function RootLayout({
             <Link href="/" className="nav-logo">
               h102-log
             </Link>
+            <div className="nav-categories" aria-label="카테고리">
+              <Link href="/" className="category-button category-button-active">
+                전체
+              </Link>
+              <Link href="/" className="category-button">
+                JavaScript
+              </Link>
+              <Link href="/" className="category-button">
+                Java
+              </Link>
+              <Link href="/" className="category-button">
+                기타
+              </Link>
+            </div>
           </div>
         </nav>
 
