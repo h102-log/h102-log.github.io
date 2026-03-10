@@ -4,13 +4,15 @@ import './globals.css';
 import Link from 'next/link';
 import { IBM_Plex_Sans_KR, JetBrains_Mono } from 'next/font/google';
 import 'highlight.js/styles/atom-one-dark.css';
+import { getAllPostsData } from '@/src/lib/posts';
+import NavSearch from '@/components/NavSearch';
 
 const headingFont = IBM_Plex_Sans_KR({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-heading',
   display: 'swap',
-});
+}); 
 
 const terminalFont = JetBrains_Mono({
   subsets: ['latin'],
@@ -30,6 +32,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const allPosts = getAllPostsData();
+
   return (
     // [주의사항/Edge Case 방어]: 접근성을 위해 웹 문서의 언어를 한국어(ko)로 명시합니다. 
     <html lang="ko">
@@ -40,20 +44,7 @@ export default function RootLayout({
             <Link href="/" className="nav-logo">
               h102-log
             </Link>
-            <div className="nav-categories" aria-label="카테고리">
-              <Link href="/" className="category-button category-button-active">
-                전체
-              </Link>
-              <Link href="/" className="category-button">
-                JavaScript
-              </Link>
-              <Link href="/" className="category-button">
-                Java
-              </Link>
-              <Link href="/" className="category-button">
-                기타
-              </Link>
-            </div>
+            <NavSearch posts={allPosts} />
           </div>
         </nav>
 

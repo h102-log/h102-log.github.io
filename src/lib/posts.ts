@@ -8,6 +8,49 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+
+type PostFrontmatter = {
+  title: string;
+  date: string;
+  description: string;
+  category?: string | string[];
+};
+
+function parseValidFrontmatter(data: unknown): PostFrontmatter | null {
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+
+  const frontmatter = data as Partial<PostFrontmatter>;
+
+  if (
+    typeof frontmatter.title !== 'string' ||
+    typeof frontmatter.date !== 'string' ||
+    typeof frontmatter.description !== 'string'
+  ) {
+    return null;
+  }
+
+  const title = frontmatter.title.trim();
+  const date = frontmatter.date.trim();
+  const description = frontmatter.description.trim();
+
+  if (!title || !date || !description) {
+    return null;
+  }
+
+  return {
+    title,
+    date,
+    description,
+    category: frontmatter.category,
+  };
+}
+
+function getDateValue(date: string): number {
+  const parsed = Date.parse(date);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
 // [비즈니스 로직 의도]: 블로그 폴더의 절대 경로를 미리 계산해 둡니다.
 // process.cwd()는 현재 Node.js 프로세스가 실행되는 위치(프로젝트 최상단)를 반환합니다.
 const postsDirectory = path.join(process.cwd(), 'posts');
@@ -40,20 +83,24 @@ export function getAllPostsData() {
         // [비즈니스 로직 의도]: gray-matter를 사용해 메타데이터(Frontmatter)와 본문을 분리합니다.
         const matterResult = matter(fileContents);
 
+        const frontmatter = parseValidFrontmatter(matterResult.data);
+
+        if (!frontmatter) {
+          // 필수 frontmatter가 없거나 비어 있으면 목록에서 제외합니다.
+          return null;
+        }
+
         // id와 메타데이터를 합쳐서 하나의 객체로 반환합니다.
         return {
           id,
-          ...(matterResult.data as { title: string; date: string; description: string }),
+          ...frontmatter,
         };
-      });
+      })
+      .filter((post): post is { id: string } & PostFrontmatter => post !== null);
 
     // [비즈니스 로직 의도]: 블로그 메인 화면에서는 최신 글이 먼저 나와야 하므로,
     // 날짜(date)를 기준으로 내림차순 정렬을 수행합니다.
-    return allPostsData.sort((a, b) => {
-      if (a.date < b.date) return 1;
-      else if (a.date > b.date) return -1;
-      else return 0;
-    });
+    return allPostsData.sort((a, b) => getDateValue(b.date) - getDateValue(a.date));
 
   } catch (error) {
     // [주의사항/Edge Case 방어]: 파일을 읽는 도중 권한 문제 등으로 에러가 발생할 경우를 대비합니다.
@@ -69,6 +116,11 @@ export async function getPostData(id: string) {
 
   // 메타데이터와 마크다운 본문을 분리합니다.
   const matterResult = matter(fileContents);
+  const frontmatter = parseValidFrontmatter(matterResult.data);
+
+  if (!frontmatter) {
+    throw new Error(`필수 frontmatter 누락: posts/${id}.md`);
+  }
 
   // [비즈니스 로직 의도]: remark 라이브러리를 사용하여 순수 마크다운 텍스트를 HTML 태그로 변환합니다.
   // 이 과정은 비동기(async)로 이루어지므로 await 키워드가 필요합니다.
@@ -84,6 +136,6 @@ export async function getPostData(id: string) {
   return {
     id,
     contentHtml,
-    ...(matterResult.data as { title: string; date: string; description: string }),
+    ...frontmatter,
   };
 }

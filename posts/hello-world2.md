@@ -1,7 +1,8 @@
 ---
-title: '포스트'
+title: 'JavaScript 예제'
 date: '2026-03-07'
-description: 'h102-log 의 첫 번째 글입니다.'
+description: 'JavaScript'
+category: "JavaScript"
 ---
 
 ```javascript

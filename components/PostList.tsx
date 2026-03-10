@@ -20,14 +20,11 @@ export default function PostList({ initialPosts, allPosts }: PostListProps) {
   const [page, setPage] = useState(1);
   const observerTarget = useRef<HTMLDivElement | null>(null);
 
-  // [비즈니스 로직]: 스크롤이 끝에 닿았을 때 실행할 함수
-  const loadMorePosts = () => {
-    const nextStep = (page + 1) * 10;
-    const nextPosts = allPosts.slice(0, nextStep);
-    
-    setVisiblePosts(nextPosts);
-    setPage(page + 1);
-  };
+  // 필터 결과가 바뀌면 보이는 목록과 페이지를 초기화합니다.
+  useEffect(() => {
+    setVisiblePosts(initialPosts);
+    setPage(1);
+  }, [initialPosts, allPosts]);
 
   useEffect(() => {
     // [방어적 코딩]: 더 이상 가져올 데이터가 없으면 관찰을 중단합니다.
@@ -36,7 +33,14 @@ export default function PostList({ initialPosts, allPosts }: PostListProps) {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          loadMorePosts();
+          setPage((prevPage) => {
+            const nextPage = prevPage + 1;
+            const nextStep = nextPage * 10;
+            const nextPosts = allPosts.slice(0, nextStep);
+
+            setVisiblePosts(nextPosts);
+            return nextPage;
+          });
         }
       },
       { threshold: 1.0 }

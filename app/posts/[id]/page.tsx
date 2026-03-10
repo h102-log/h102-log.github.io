@@ -1,5 +1,6 @@
 // 경로가 프로젝트 구조에 맞게 설정되었는지 확인해 주세요!
 import { getAllPostsData, getPostData } from '../../../src/lib/posts';
+import BackButton from '../../../components/BackButton';
 
 // [방어적 코딩 및 Edge Case 처리]: 
 // 우리는 next.config.ts에서 'output: export' (정적 배포)를 설정했습니다.
@@ -20,6 +21,7 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
 
   return (
     <article className="post-detail-container">
+      <BackButton />
       <header className="post-header">
         <h1 className="post-title">{postData.title}</h1>
         <p className="post-date">{postData.date}</p>
