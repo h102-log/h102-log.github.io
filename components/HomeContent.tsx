@@ -8,66 +8,105 @@ type PostItem = {
   title: string;
   description: string;
   date: string;
-  category?: string | string[];
+  tag?: string | string[];
 };
 
 type HomeContentProps = {
   allPosts: PostItem[];
 };
 
-const ALL_CATEGORY = '전체';
+const ALL_TAG = '전체';
 
 export default function HomeContent({ allPosts }: HomeContentProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY);
+  // 선택된 태그 배열(빈 배열이면 전체 보기)
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const categories = useMemo(() => {
+  const tagCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    allPosts.forEach((post) => {
+      const tags = Array.isArray(post.tag)
+        ? post.tag
+        : typeof post.tag === 'string' && post.tag.trim() !== ''
+          ? [post.tag]
+          : [];
+
+      tags.forEach((tag) => {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      });
+    });
+
+    return counts;
+  }, [allPosts]);
+
+  const tags = useMemo(() => {
     const values = allPosts.flatMap((post) => {
-      if (Array.isArray(post.category)) {
-        return post.category;
+      if (Array.isArray(post.tag)) {
+        return post.tag;
       }
 
-      if (typeof post.category === 'string' && post.category.trim() !== '') {
-        return [post.category];
+      if (typeof post.tag === 'string' && post.tag.trim() !== '') {
+        return [post.tag];
       }
       
       return [];
     });
 
-    return [ALL_CATEGORY, ...Array.from(new Set(values))];
+    return [ALL_TAG, ...Array.from(new Set(values))];
   }, [allPosts]);
 
-  const categoryFilteredPosts = useMemo(() => {
-    if (selectedCategory === ALL_CATEGORY) {
+  const tagFilteredPosts = useMemo(() => {
+    // 태그를 선택하지 않으면 전체 글을 보여줍니다.
+    if (selectedTags.length === 0) {
       return allPosts;
     }
 
     return allPosts.filter((post) => {
-      if (Array.isArray(post.category)) {
-        return post.category.includes(selectedCategory);
+      if (Array.isArray(post.tag)) {
+        // OR 조건: 선택 태그 중 하나라도 포함되면 노출
+        return post.tag.some((tag) => selectedTags.includes(tag));
       }
 
-      return post.category === selectedCategory;
+      return typeof post.tag === 'string' && selectedTags.includes(post.tag);
     });
-  }, [allPosts, selectedCategory]);
+  }, [allPosts, selectedTags]);
 
-  const initialPosts = categoryFilteredPosts.slice(0, 10);
+  // 전체는 초기화, 개별 태그는 토글 선택 
+  const toggleTagSelection = (tag: string) => {
+    if (tag === ALL_TAG) {
+      setSelectedTags([]);
+      return;
+    }
+
+    setSelectedTags((prevTags) => {
+      if (prevTags.includes(tag)) {
+        return prevTags.filter((selectedTag) => selectedTag !== tag);
+      }
+
+      return [...prevTags, tag];
+    });
+  };
+
+  const initialPosts = tagFilteredPosts.slice(0, 10);
 
   return (
     <main className="main-container home-layout">
-      <aside className="home-sidebar" aria-label="카테고리 목록">
-        <h2 className="sidebar-title">카테고리</h2>
+      <aside className="home-sidebar" aria-label="태그 목록">
+        <h2 className="sidebar-title">태그</h2>
         <ul className="sidebar-category-list">
-          {categories.map((category) => {
-            const isActive = selectedCategory === category;
+          {tags.map((tag) => {
+            const isActive = tag === ALL_TAG ? selectedTags.length === 0 : selectedTags.includes(tag);
+            const postCount = tag === ALL_TAG ? allPosts.length : (tagCounts.get(tag) ?? 0);
 
             return (
-              <li key={category}>
+              <li key={tag}>
                 <button
                   type="button"
                   className={`sidebar-category-button ${isActive ? 'sidebar-category-button-active' : ''}`}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => toggleTagSelection(tag)}
                 >
-                  {category}
+                  <span>{tag}</span>
+                  <span className="sidebar-tag-count">{postCount}</span>
                 </button>
               </li>
             );
@@ -85,14 +124,18 @@ export default function HomeContent({ allPosts }: HomeContentProps) {
           <div className="section-headline">
             <h2>Writing</h2>
             <p>
-              {categoryFilteredPosts.length} / {allPosts.length} posts
+              {tagFilteredPosts.length} posts
             </p>
           </div>
 
-          {categoryFilteredPosts.length === 0 ? (
+          {tagFilteredPosts.length === 0 ? (
             <p className="empty-post-message">조건에 맞는 글이 없습니다.</p>
           ) : (
-            <PostList initialPosts={initialPosts} allPosts={categoryFilteredPosts}></PostList>
+            <PostList
+              key={selectedTags.length === 0 ? ALL_TAG : selectedTags.slice().sort().join('|')}
+              initialPosts={initialPosts}
+              allPosts={tagFilteredPosts}
+            ></PostList>
           )}
         </section>
       </div>

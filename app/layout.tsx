@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { IBM_Plex_Sans_KR, JetBrains_Mono } from 'next/font/google';
 import 'highlight.js/styles/atom-one-dark.css';
 import { getAllPostsData } from '@/src/lib/posts';
+import { createAbsoluteUrl, siteConfig } from '@/src/lib/site';
 import NavSearch from '@/components/NavSearch';
 
 const headingFont = IBM_Plex_Sans_KR({
@@ -23,8 +24,32 @@ const terminalFont = JetBrains_Mono({
 
 // [비즈니스 로직 의도]: 이 객체는 검색 엔진(구글, 네이버)에게 내 블로그가 어떤 곳인지 알려주는 역할을 합니다. (SEO 최적화)  
 export const metadata: Metadata = {
-  title: 'h102-log',
-  description: '개발자 bh102의 기술 블로그입니다.', 
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  alternates: {
+    canonical: '/',
+    types: {
+      'application/rss+xml': createAbsoluteUrl('/feed.xml'),
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: siteConfig.locale,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: 'summary',
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
 };
 
 export default function RootLayout({

@@ -30,7 +30,6 @@ export default function NavSearch({ posts }: NavSearchProps) {
     return posts.filter((post) => {
       const title = post.title.toLowerCase();
       const description = post.description.toLowerCase();
-      const id = post.id.toLowerCase();
 
       return (
         title.includes(normalizedQuery) ||
@@ -65,10 +64,6 @@ export default function NavSearch({ posts }: NavSearchProps) {
 
   return (
     <div className="nav-search-area" ref={searchModalAreaRef}>
-      <label htmlFor="post-search" className="post-search-label">
-        검색
-      </label>
-
       <div className="post-search-input-wrap">
         <input
           id="post-search"

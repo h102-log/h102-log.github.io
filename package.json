@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "generate:feed": "node scripts/generate-rss.mjs",
+    "prebuild": "npm run generate:feed",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -13,9 +15,11 @@
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "rehype-stringify": "^10.0.1",
     "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "remark-rehype": "^11.1.2"
   },

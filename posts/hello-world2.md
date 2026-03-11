@@ -2,7 +2,7 @@
 title: 'JavaScript 예제'
 date: '2026-03-07'
 description: 'JavaScript'
-category: "JavaScript"
+tag: "JavaScript"
 ---
 
 ```javascript
