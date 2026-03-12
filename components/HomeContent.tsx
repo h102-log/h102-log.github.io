@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useEffect } from 'react';
+// [주의사항]: React 패키지에서 Suspense를 추가로 import 해야 합니다.
+import { useMemo, useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import PostList from '@/components/PostList';
 
@@ -19,6 +19,29 @@ type HomeContentProps = {
 
 const ALL_TAG = '전체';
 
+// [비즈니스 로직 의도]: useSearchParams()를 호출하는 로직을 별도의 독립된 컴포넌트로 분리합니다.
+// Next.js 빌드 시 정적 생성(Prerendering)을 방해하지 않도록, 이 컴포넌트만 Suspense로 격리하기 위함입니다.
+function SearchParamsHandler({
+  setSelectedTags,
+}: {
+  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>;
+}) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // [방어적 코딩]: 빌드 타임이나 예기치 못한 상황에서 searchParams가 null일 경우를 대비합니다.
+    if (!searchParams) return;
+
+    const tagParam = searchParams.get('tag');
+    if (tagParam && tagParam.trim() !== '') {
+      setSelectedTags([tagParam]);
+    }
+  }, [searchParams, setSelectedTags]);
+
+  // [의도]: 이 컴포넌트는 화면에 보여줄 UI가 없으므로 null을 반환하여 로직만 백그라운드에서 실행되도록 합니다.
+  return null; 
+}
+
 export default function HomeContent({ allPosts }: HomeContentProps) {
   // 메인 화면시작시 스크롤은 항상 최상단에 오도록
   useEffect(() => {
@@ -28,14 +51,7 @@ export default function HomeContent({ allPosts }: HomeContentProps) {
   // 선택된 태그 배열(빈 배열이면 전체 보기)
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // 쿼리스트링에서 tag 값 읽어 초기 선택 태그로 반영
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    const tagParam = searchParams.get('tag');
-    if (tagParam && tagParam.trim() !== '') {
-      setSelectedTags([tagParam]);
-    }
-  }, [searchParams]);
+  // (이전 코드 삭제됨) searchParams와 useEffect 로직은 위 SearchParamsHandler 컴포넌트로 이동했습니다.
 
   const tagCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -108,6 +124,13 @@ export default function HomeContent({ allPosts }: HomeContentProps) {
  return (
     <main className="main-container home-layout">
       
+      {/* [비즈니스 로직 의도]: 파라미터를 읽어오는 로직을 Suspense로 감싸서, 
+          사용자가 접속하기 전(빌드 시점)에는 이 부분의 렌더링을 보류하도록 처리합니다. 
+          UI가 없는 컴포넌트이므로 fallback은 null로 지정합니다. */}
+      <Suspense fallback={null}>
+        <SearchParamsHandler setSelectedTags={setSelectedTags} />
+      </Suspense>
+
       {/* [비즈니스 로직 의도]: 스크린 리더기 등 웹 접근성(a11y)을 고려하여 
           핵심 콘텐츠인 '글 목록'이 보조 네비게이션인 '태그'보다 HTML DOM 상에서 먼저 오도록 배치합니다. */}
       <div className="home-main-content">
