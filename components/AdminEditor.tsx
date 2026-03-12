@@ -40,6 +40,9 @@ const MIN_PREVIEW_IMAGE_HEIGHT = 120;
 const MAX_PREVIEW_IMAGE_HEIGHT = 1200;
 const IMAGE_SIZE_TOKEN_PATTERN = /\b([wh])\s*=\s*(\d{2,4})\b/gi;
 const MARKDOWN_IMAGE_PATTERN = /!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)/g;
+const MARKDOWN_LINK_PATTERN = /\[[^\]]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+const IMAGE_PUBLIC_DIRECTORY = '/images/posts/';
+const ATTACHMENT_PUBLIC_DIRECTORY = '/files/posts/';
 
 // 한글 제목도 URL slug로 사용할 수 있도록 허용하는 슬러그 생성 규칙입니다.
 // 의도: 작성자가 입력한 제목을 URL 친화적으로 정규화해 포스트 파일명 충돌을 줄입니다.
@@ -264,7 +267,7 @@ function appendAttachmentLinksToContent(markdown: string, attachmentLines: strin
   return `${trimmedMarkdown}\n\n${attachmentSectionTitle}\n${uniqueAttachmentLines.join('\n')}\n`;
 }
 
-function normalizeAttachmentPath(pathValue: string) {
+function normalizeAssetPath(pathValue: string) {
   const trimmedPath = pathValue.trim();
 
   if (!trimmedPath) {
@@ -285,9 +288,9 @@ function normalizeAttachmentPath(pathValue: string) {
     .replace(/\/+$/g, '');
 }
 
-function isSameAttachmentPath(leftPath: string, rightPath: string) {
-  const normalizedLeft = normalizeAttachmentPath(leftPath);
-  const normalizedRight = normalizeAttachmentPath(rightPath);
+function isSameAssetPath(leftPath: string, rightPath: string) {
+  const normalizedLeft = normalizeAssetPath(leftPath);
+  const normalizedRight = normalizeAssetPath(rightPath);
 
   if (!normalizedLeft || !normalizedRight) {
     return false;
@@ -298,6 +301,59 @@ function isSameAttachmentPath(leftPath: string, rightPath: string) {
   }
 
   return normalizedLeft.endsWith(normalizedRight) || normalizedRight.endsWith(normalizedLeft);
+}
+
+function collectReferencedAssetPathSet(markdown: string, directoryPath: string, pattern: RegExp) {
+  const referencedPathSet = new Set<string>();
+  let matchResult = pattern.exec(markdown);
+
+  while (matchResult) {
+    const assetPath = typeof matchResult[2] === 'string'
+      ? matchResult[2]
+      : typeof matchResult[1] === 'string'
+        ? matchResult[1]
+        : '';
+    const normalizedPath = normalizeAssetPath(assetPath);
+
+    if (normalizedPath.startsWith(directoryPath)) {
+      referencedPathSet.add(normalizedPath);
+    }
+
+    matchResult = pattern.exec(markdown);
+  }
+
+  pattern.lastIndex = 0;
+  return referencedPathSet;
+}
+
+function resolveMappedAssetValue<T>(assetPath: string, valueMap: Record<string, T>) {
+  const exactValue = valueMap[assetPath];
+
+  if (typeof exactValue !== 'undefined') {
+    return exactValue;
+  }
+
+  const matchedEntry = Object.entries(valueMap).find(([storedPath]) => isSameAssetPath(storedPath, assetPath));
+  return matchedEntry?.[1];
+}
+
+function removeAssetEntryByPath<T>(valueMap: Record<string, T>, assetPath: string) {
+  let hasChanged = false;
+  const nextEntries = Object.entries(valueMap).filter(([storedPath]) => {
+    const shouldKeep = !isSameAssetPath(storedPath, assetPath);
+
+    if (!shouldKeep) {
+      hasChanged = true;
+    }
+
+    return shouldKeep;
+  });
+
+  if (!hasChanged) {
+    return valueMap;
+  }
+
+  return Object.fromEntries(nextEntries) as Record<string, T>;
 }
 
 function removeAttachmentLinkByPath(markdown: string, attachmentPath: string) {
@@ -316,8 +372,8 @@ function removeAttachmentLinkByPath(markdown: string, attachmentPath: string) {
         return true;
       }
 
-      return !isSameAttachmentPath(linkedPath, attachmentPath);
-    });
+      return !isSameAssetPath(linkedPath, attachmentPath);
+    }); 
   const attachmentSectionTitle = '## 첨부파일';
   const sectionStartIndex = lines.findIndex((line) => line.trim() === attachmentSectionTitle);
 
@@ -456,6 +512,12 @@ export default function AdminEditor() {
   // 커밋 대상 파일 경로를 slug 기반으로 고정합니다.
   // 의도: 에디터 UI/미리보기/커밋 API가 동일 경로를 바라보게 하여 혼선을 줄입니다.
   const filePath = `posts/${computedSlug}.md`;
+  const referencedImagePathSet = useMemo(() => {
+    return collectReferencedAssetPathSet(content, IMAGE_PUBLIC_DIRECTORY, MARKDOWN_IMAGE_PATTERN);
+  }, [content]);
+  const referencedAttachmentPathSet = useMemo(() => {
+    return collectReferencedAssetPathSet(content, ATTACHMENT_PUBLIC_DIRECTORY, MARKDOWN_LINK_PATTERN);
+  }, [content]);
 
   const handleImageResizePointerDown = (
     event: ReactPointerEvent<HTMLButtonElement>,
@@ -595,29 +657,21 @@ export default function AdminEditor() {
     setStatusMessage('이미지를 본문에서 삭제했습니다. 커밋 시 반영됩니다.');
 
     setPendingImageUploadMap((previousMap) => {
-      if (!(imagePath in previousMap)) {
-        return previousMap;
-      }
-
-      const nextMap = { ...previousMap };
-      delete nextMap[imagePath];
-      return nextMap;
+      return removeAssetEntryByPath(previousMap, imagePath);
     });
 
     setLocalPreviewImageMap((previousMap) => {
-      if (!(imagePath in previousMap)) {
+      const objectUrl = resolveMappedAssetValue(imagePath, previousMap);
+
+      if (typeof objectUrl !== 'string') {
         return previousMap;
       }
-
-      const nextMap = { ...previousMap };
-      const objectUrl = previousMap[imagePath];
 
       if (typeof objectUrl === 'string' && objectUrl.startsWith('blob:')) {
         URL.revokeObjectURL(objectUrl);
       }
 
-      delete nextMap[imagePath];
-      return nextMap;
+      return removeAssetEntryByPath(previousMap, imagePath);
     });
 
     setPreviewImageAlignMap((previousMap) => {
@@ -654,13 +708,7 @@ export default function AdminEditor() {
   const handleDeleteAttachment = (attachmentPath: string) => {
     setContent((previousContent) => removeAttachmentLinkByPath(previousContent, attachmentPath));
     setPendingAttachmentUploadMap((previousMap) => {
-      if (!(attachmentPath in previousMap)) {
-        return previousMap;
-      }
-
-      const nextMap = { ...previousMap };
-      delete nextMap[attachmentPath];
-      return nextMap;
+      return removeAssetEntryByPath(previousMap, attachmentPath);
     });
     setStatusMessage('첨부파일을 본문에서 삭제했습니다. 커밋 시 반영됩니다.');
   };
@@ -789,7 +837,7 @@ export default function AdminEditor() {
 
     const pendingUploads = files.map((file, index) => {
       const safeFileName = sanitizeFileName(file.name);
-      const publicImagePath = `/images/posts/${safeSlug}/${timestamp}-${index}-${safeFileName}`;
+      const publicImagePath = `${IMAGE_PUBLIC_DIRECTORY}${safeSlug}/${timestamp}-${index}-${safeFileName}`;
 
       return {
         file,
@@ -841,7 +889,7 @@ export default function AdminEditor() {
 
     const pendingUploads = files.map((file, index) => {
       const safeFileName = sanitizeFileName(file.name);
-      const publicAttachmentPath = `/files/posts/${safeSlug}/${timestamp}-${index}-${safeFileName}`;
+      const publicAttachmentPath = `${ATTACHMENT_PUBLIC_DIRECTORY}${safeSlug}/${timestamp}-${index}-${safeFileName}`;
 
       return {
         file,
@@ -927,10 +975,26 @@ export default function AdminEditor() {
 
       const pendingUploadsForCommit = Object.values(pendingImageUploadMap);
       const pendingAttachmentUploadsForCommit = Object.values(pendingAttachmentUploadMap);
+      const filteredPendingImageUploadsForCommit = pendingUploadsForCommit.filter((pendingUpload) => (
+        referencedImagePathSet.has(normalizeAssetPath(pendingUpload.publicImagePath))
+      ));
+      const filteredPendingAttachmentUploadsForCommit = pendingAttachmentUploadsForCommit.filter((pendingUpload) => (
+        referencedAttachmentPathSet.has(normalizeAssetPath(pendingUpload.publicAttachmentPath))
+      ));
 
-      if (pendingUploadsForCommit.length > 0) {
-        setStatusMessage(`커밋 전 이미지 ${pendingUploadsForCommit.length}개를 업로드하는 중입니다...`);
-        const uploadedPublicImagePathList = await handleImageUpload(pendingUploadsForCommit);
+      setPendingImageUploadMap((previousMap) => Object.fromEntries(
+        Object.entries(previousMap).filter(([assetPath]) => referencedImagePathSet.has(normalizeAssetPath(assetPath))),
+      ));
+      setPendingAttachmentUploadMap((previousMap) => Object.fromEntries(
+        Object.entries(previousMap).filter(([assetPath]) => referencedAttachmentPathSet.has(normalizeAssetPath(assetPath))),
+      ));
+      setLocalPreviewImageMap((previousMap) => Object.fromEntries(
+        Object.entries(previousMap).filter(([assetPath]) => referencedImagePathSet.has(normalizeAssetPath(assetPath))),
+      ));
+
+      if (filteredPendingImageUploadsForCommit.length > 0) {
+        setStatusMessage(`커밋 전 이미지 ${filteredPendingImageUploadsForCommit.length}개를 업로드하는 중입니다...`);
+        const uploadedPublicImagePathList = await handleImageUpload(filteredPendingImageUploadsForCommit);
 
         setPendingImageUploadMap((previousMap) => {
           const nextMap = { ...previousMap };
@@ -943,9 +1007,9 @@ export default function AdminEditor() {
         });
       }
 
-      if (pendingAttachmentUploadsForCommit.length > 0) {
-        setStatusMessage(`커밋 전 첨부파일 ${pendingAttachmentUploadsForCommit.length}개를 업로드하는 중입니다...`);
-        const uploadedPublicAttachmentPathList = await handleAttachmentUpload(pendingAttachmentUploadsForCommit);
+      if (filteredPendingAttachmentUploadsForCommit.length > 0) {
+        setStatusMessage(`커밋 전 첨부파일 ${filteredPendingAttachmentUploadsForCommit.length}개를 업로드하는 중입니다...`);
+        const uploadedPublicAttachmentPathList = await handleAttachmentUpload(filteredPendingAttachmentUploadsForCommit);
 
         setPendingAttachmentUploadMap((previousMap) => {
           const nextMap = { ...previousMap };
@@ -1275,7 +1339,7 @@ export default function AdminEditor() {
                       const resolvedHeight = clampImageHeight(
                         cachedSize?.height ?? parsedSize.height ?? Math.round(resolvedWidth / fallbackRatio),
                       );
-                      const previewSource = localPreviewImageMap[src] ?? src;
+                      const previewSource = resolveMappedAssetValue(src, localPreviewImageMap) ?? src;
                       // previewImageAlignMap에 명시적으로 등록된 값 우선, 없으면 md title에서 파싱
                       const resolvedAlign = imageIndex in previewImageAlignMap
                         ? previewImageAlignMap[imageIndex]
