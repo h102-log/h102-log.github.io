@@ -16,6 +16,12 @@ type HtmlNode = {
   properties?: Record<string, unknown>;
 };
 
+export type PostTocItem = {
+  id: string;
+  text: string;
+  level: number;
+};
+
 const IMAGE_SIZE_TOKEN_PATTERN = /\b([wh])\s*=\s*(\d{2,4})\b/gi;
 const MIN_POST_IMAGE_WIDTH = 160;
 const MAX_POST_IMAGE_WIDTH = 1200;
@@ -80,6 +86,37 @@ function normalizeTags(value: unknown): string[] | undefined {
 function visitHtmlTree(node: HtmlNode, visitor: (currentNode: HtmlNode) => void) {
   visitor(node);
   node.children?.forEach((childNode) => visitHtmlTree(childNode, visitor));
+}
+
+function getHtmlNodeText(node: HtmlNode): string {
+  if (typeof node.value === 'string') {
+    return node.value;
+  }
+
+  if (!node.children || node.children.length === 0) {
+    return '';
+  }
+
+  return node.children.map((childNode) => getHtmlNodeText(childNode)).join('');
+}
+
+function createHeadingSlugger() {
+  const usedSlugCountMap = new Map<string, number>();
+
+  return (headingText: string) => {
+    const baseSlug = headingText
+      .toLowerCase()
+      .trim()
+        .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'section';
+
+    const usedCount = usedSlugCountMap.get(baseSlug) ?? 0;
+    usedSlugCountMap.set(baseSlug, usedCount + 1);
+
+    return usedCount === 0 ? baseSlug : `${baseSlug}-${usedCount}`;
+  };
 }
 
 function clampPostImageWidth(width: number) {
@@ -212,6 +249,48 @@ function rehypeApplyAttachmentDownload() {
         currentNode.properties.title = titleWithoutDownloadToken;
       } else {
         delete currentNode.properties.title;
+      }
+    });
+  };
+}
+
+function rehypeCollectTocAndApplyHeadingId(options?: { tocItems?: PostTocItem[] }) {
+  return (tree: HtmlNode) => {
+    const tocItems = options?.tocItems ?? [];
+    const slugifyHeading = createHeadingSlugger();
+
+    visitHtmlTree(tree, (currentNode) => {
+      const headingMatch = typeof currentNode.tagName === 'string'
+        ? /^h([1-6])$/.exec(currentNode.tagName)
+        : null;
+
+      if (!headingMatch) {
+        return;
+      }
+
+      const headingLevel = Number.parseInt(headingMatch[1], 10);
+      const headingText = getHtmlNodeText(currentNode).replace(/\s+/g, ' ').trim();
+
+      if (!headingText) {
+        return;
+      }
+
+      const existingId = typeof currentNode.properties?.id === 'string'
+        ? currentNode.properties.id
+        : undefined;
+      const headingId = existingId || slugifyHeading(headingText);
+
+      currentNode.properties = {
+        ...(currentNode.properties ?? {}),
+        id: headingId,
+      };
+
+      if (headingLevel >= 2 && headingLevel <= 4) {
+        tocItems.push({
+          id: headingId,
+          text: headingText,
+          level: headingLevel,
+        });
       }
     });
   };
@@ -392,10 +471,13 @@ export async function getPostData(id: string) {
 
   // [비즈니스 로직 의도]: remark 라이브러리를 사용하여 순수 마크다운 텍스트를 HTML 태그로 변환합니다.
   // 이 과정은 비동기(async)로 이루어지므로 await 키워드가 필요합니다.
+  const tocItems: PostTocItem[] = [];
+
   const processedContent = await remark()
     .use(remarkParse)
     .use(remarkBreaks)
     .use(remarkRehype)
+    .use(rehypeCollectTocAndApplyHeadingId, { tocItems })
     .use(rehypeApplyImageWidthFromTitle)
     .use(rehypeApplyAttachmentDownload)
     .use(rehypeHighlight)
@@ -407,6 +489,7 @@ export async function getPostData(id: string) {
   return {
     id,
     contentHtml,
+    toc: tocItems,
     ...frontmatter,
   };
 }

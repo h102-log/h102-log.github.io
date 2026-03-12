@@ -62,6 +62,11 @@ export default function RootLayout({
   return (
     // [주의사항/Edge Case 방어]: 접근성을 위해 웹 문서의 언어를 한국어(ko)로 명시합니다. 
     <html lang="ko">
+      <head>
+        {/* Pretendard 웹폰트 적용 */}
+       <link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+      </head>
       <body className={`${headingFont.variable} ${terminalFont.variable}`}>
         {/* [비즈니스 로직 의도]: 모든 페이지 최상단에 고정될 공통 헤더(네비게이션)입니다. */}
         <nav className="global-nav">

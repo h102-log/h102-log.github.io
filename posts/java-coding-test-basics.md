@@ -1,5 +1,5 @@
 ---
-title: Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴
+title: Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴 글자수 길이 붖루 ㅏ느
 date: "2026-03-12"
 description: Java 코딩 테스트에서 자주 출제되는 알고리즘과 실전 코드 패턴을 정리한 가이드입니다.
 tag:
@@ -15,7 +15,7 @@ Java로 코딩 테스트를 준비하는 개발자들을 위한 실전 가이드
 
 ---
 
-## 1. 입출력 처리 기본
+## 입출력 처리 기본
 
 코테의 첫 번째 관문인 입출력 처리를 효율적으로 하는 것이 중요합니다.
 
@@ -53,7 +53,7 @@ public class InputExample {
 
 ---
 
-## 2. 배열과 리스트 다루기
+## 배열과 리스트 다루기
 
 ### ArrayList 기본 사용법
 
@@ -111,7 +111,7 @@ public class ArrayExample {
 
 ---
 
-## 3. 문자열 처리
+## 문자열 처리
 
 ### 문자열 비교와 조작
 
@@ -170,7 +170,7 @@ public class StringBuilderExample {
 
 ---
 
-## 4. 자주 쓰이는 자료구조
+## 자주 쓰이는 자료구조
 
 ### Stack
 
@@ -276,7 +276,7 @@ public class MapExample {
 
 ---
 
-## 5. 정렬과 비교
+## 정렬과 비교
 
 ### 객체 정렬하기
 
@@ -322,7 +322,7 @@ public class SortExample {
 
 ---
 
-## 6. 배열 최솟값/최댓값
+##  배열 최솟값/최댓값
 
 ```java
 import java.util.*;
@@ -350,7 +350,7 @@ public class MinMaxExample {
 
 ---
 
-## 7. 2중 배열 다루기
+## 이중 배열 다루기
 
 ```java
 public class Matrix2DExample {
@@ -395,9 +395,9 @@ public class Matrix2DExample {
 
 ---
 
-## 8. 자주 하는 실수와 주의사항
+## 자주 하는 실수와 주의사항
 
-### 1. 정수 오버플로우
+### 정수 오버플로우
 
 ```java
 public class OverflowExample {
@@ -417,7 +417,7 @@ public class OverflowExample {
 }
 ```
 
-### 2. null 체크
+### null 체크
 
 ```java
 public class NullCheckExample {
@@ -438,7 +438,7 @@ public class NullCheckExample {
 }
 ```
 
-### 3. 배열 복사 실수
+### 배열 복사 실수
 
 ```java
 public class CopyMistakeExample {
@@ -460,7 +460,7 @@ public class CopyMistakeExample {
 
 ---
 
-## 9. 짧은 코드 예제 - 실전 문제 풀이
+## 짧은 코드 예제 - 실전 문제 풀이
 
 ### 두 수의 합 찾기
 
@@ -521,7 +521,7 @@ public class RotateArray {
 
 ---
 
-## 10. 성능 최적화 팁
+## 성능 최적화 팁
 
 | 작업 | 추천 방법 |
 |------|---------|

@@ -1,3 +1,7 @@
+/* 태그 링크 밑줄 제거 */
+.post-end-tag-item {
+  text-decoration: none;
+}
 :root {
   --post-content-max-width: 760px;
   --background-color: #f8fafc;
@@ -15,18 +19,24 @@
   margin: 0;
   padding: 0;
 }
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
 
 html,
 body {
   min-height: 100%;
+  
 }
 
 body {
-  font-family: var(--font-heading), "Noto Sans KR", sans-serif;
-  background:
-    radial-gradient(circle at 10% -20%, rgba(14, 165, 233, 0.12), transparent 45%),
-    radial-gradient(circle at 100% 0%, rgba(2, 132, 199, 0.08), transparent 30%),
-    var(--background-color);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+background: var(--background-color);
   color: var(--text-primary);
   line-height: 1.7;
 }
@@ -35,12 +45,50 @@ a {
   color: inherit;
 }
 
-.main-container,
-.post-detail-container {
+.main-container {
   max-width: var(--post-content-max-width);
   margin: 0 auto;
   padding: 56px 20px;
   animation: reveal 0.35s ease-out;
+}
+
+.post-detail-container {
+  /* [Design]: 기존 1120px에서 목차 공간(최대 260px)과 좌우 대칭 여백을 고려하여 1440px로 확장합니다. 
+     이는 FHD 이상의 모니터에서 본문과 목차가 가장 안정적으로 보이는 표준 사이즈입니다. */
+  /* max-width: 1440px;  */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  padding: 56px 20px;
+  animation: reveal 0.35s ease-out;
+}
+
+.post-detail-layout {
+  display: grid;
+  /* 좌우측을 1fr로 동일하게 분배하고, 중앙에 최대 760px의 본문 영역을 배치합니다. */
+  grid-template-columns: 1fr minmax(0, var(--post-content-max-width)) 1fr;
+  gap: 3rem;
+  align-items: start;
+  width: 100%; /* 부모 컨테이너 기준 꽉 차게 설정하여 1fr이 정확히 화면을 반분하도록 처리 */
+}
+
+/* [Design]: 본문 영역을 무조건 중앙(2번째) 열에 배치 */
+.post-detail-main {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.post-toc-area {
+  grid-column: 3;
+  width: 100%;
+  /* [방어적 코딩]: 컨테이너가 아무리 커져도 목차가 무한정 넓어지지 않고,
+     폰트 크기(0.86rem)에 맞춰 읽기 좋은 최대 너비(260px)까지만 늘어나도록 제어합니다. */
+  max-width: 260px; 
+  position: sticky;
+  top: 94px;
+  align-self: start;
 }
 
 .home-layout {
@@ -385,6 +433,59 @@ a {
   transform: translateY(-1px);
 }
 
+.post-toc {
+  border-left: 1px solid var(--border-color);
+  padding-left: 0.95rem;
+}
+
+.post-toc-title {
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.79rem;
+  color: var(--muted-text);
+  margin-bottom: 0.55rem;
+  letter-spacing: 0.03em;
+}
+
+.post-toc-list {
+  list-style: none;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.post-toc-item-level-2 {
+  padding-left: 0;
+}
+
+.post-toc-item-level-3 {
+  padding-left: 0.6rem;
+}
+
+.post-toc-item-level-4 {
+  padding-left: 1.1rem;
+}
+
+.post-toc-link {
+  display: block;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  padding: 0.16rem 0.24rem;
+  border-radius: 8px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.post-toc-link:hover {
+  color: var(--accent-color);
+  background: #f0f9ff;
+}
+
+.post-toc-link-active {
+  color: #075985;
+  background: #e0f2fe;
+  font-weight: 600;
+}
+
 .post-content {
   color: #1e293b;
   font-size: 1.02rem;
@@ -493,9 +594,14 @@ a {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.78);
   text-decoration: none;
-  min-height: 100%;
+  min-height: 100%; 
 }
-
+/* 줄바뀜 방지 ... 처리*/
+.post-pagination-link > strong{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .post-pagination-next {
   text-align: right;
 }
@@ -1105,6 +1211,26 @@ a {
   }
 }
 
+@media (max-width: 1080px) {
+  .post-detail-container {
+    max-width: var(--post-content-max-width);
+  }
+
+  .post-detail-layout {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  /* [방어적 코딩]: 모바일(1단 그리드) 환경에서는 본문을 다시 1번째 열로 원복시켜 줍니다. */
+  .post-detail-main {
+    grid-column: 1; 
+  }
+
+  .post-toc-area {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .main-container,
   .post-detail-container {
@@ -1174,7 +1300,7 @@ a {
   .nav-container {
     align-items: stretch;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1rem; 
   }
 
   .nav-search-area {
@@ -1185,5 +1311,191 @@ a {
   .nav-search-area .post-search-input-wrap {
     flex-direction: row;
     align-items: center;
+  }
+}
+/* [Design]: 메인 화면 컨테이너 폭 확장 및 중앙 정렬 강제 */
+/* 의도: 본문 상세 페이지(760px)와 달리 메인 화면은 리스트 탐색이 목적이므로,
+   태그와 리스트가 겹치지 않게 컨테이너 폭을 넓게 잡아줍니다. */
+.main-container.home-layout {
+  max-width: 1440px; /* 리스트와 좌우 여백을 충분히 담을 수 있게 확장 */
+  display: grid;
+  /* 좌측 태그(240px) | 중앙 리스트(넓게 확장) | 우측 여백(240px) 
+     우측에 보이지 않는 240px 공간을 두어 중앙 리스트가 화면 정중앙에 오도록 대칭을 맞춥니다. */
+  grid-template-columns: 240px minmax(0, 760px) 240px; 
+  gap: 3rem;
+  justify-content: center; /* 그리드 전체를 화면 가운데로 정렬 */
+  align-items: start;
+}
+
+.home-sidebar {
+  /* 기존 grid-column: 1; 에서 3번째 열(우측)로 변경합니다. */
+  grid-column: 3; 
+  position: sticky;
+  top: 88px;
+}
+
+/* (참고용) 중앙 콘텐츠는 그대로 유지하시면 됩니다. */
+.home-main-content {
+  grid-column: 2; 
+  min-width: 0;
+}
+/* [방어적 코딩]: 화면이 좁아지는 태블릿/모바일 환경 대비 */
+@media (max-width: 1080px) {
+  .main-container.home-layout {
+    max-width: var(--post-content-max-width); /* 모바일에서는 다시 좁은 폭으로 복귀 */
+    grid-template-columns: 1fr; /* 1단 그리드로 변경하여 깨짐 방지 */
+  }
+
+  .home-sidebar {
+    grid-column: 1;
+    position: static; /* 화면이 좁을 땐 스틱키 고정을 풀어서 자연스럽게 스크롤되게 함 */
+    margin-bottom: 2rem; /* 리스트와의 간격 확보 */
+  }
+
+  .home-main-content {
+    grid-column: 1;
+  }
+}
+/* =========================================
+   [Design]: 본문 하단 종료 영역 (Post End Section)
+   ========================================= */
+.post-end-section {
+  margin-top: 4rem; /* 본문 내용과 확실한 거리두기 */
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color); /* 본문이 끝났음을 알리는 명확한 구분선 */
+}
+
+/* 태그 영역 */
+.post-end-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.tag-icon {
+  color: var(--muted-text);
+  margin-right: 0.2rem;
+}
+
+.post-end-tag-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 999px; /* 알약 형태의 라운드 처리 */
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+}
+
+.post-end-tag-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* 라이선스 및 공유 영역 */
+.post-end-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted-text);
+  font-size: 0.88rem;
+}
+
+.post-license strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.post-share {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.share-label {
+  margin-right: 0.3rem;
+  font-family: var(--font-terminal), "Consolas", monospace;
+}
+
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--text-secondary);
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.share-button:hover {
+  background: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+/* [방어적 코딩]: 모바일 화면에서는 공간이 좁으므로 세로 배치로 변경합니다. */
+@media (max-width: 640px) {
+  .post-end-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
+}
+
+/* =========================================
+   [Design]: 공유하기 복사 토스트 모달 애니메이션
+   ========================================= */
+.post-share {
+  position: relative; /* 토스트 모달의 띄움 기준점 */
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.copy-toast-modal {
+  position: absolute;
+  bottom: 140%; /* 버튼 바로 위로 띄웁니다 */
+  right: 0;
+  background: rgba(15, 23, 42, 0.85); /* 반투명 네이비/블랙 느낌 */
+  color: #ffffff;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-terminal), "Consolas", monospace;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  animation: toastFadeIn 0.2s ease-out forwards;
+  z-index: 100;
+}
+
+/* 말풍선 아래쪽 뾰족한 꼬리 */
+.copy-toast-modal::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 12px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.85) transparent transparent transparent;
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px); /* 살짝 아래에서 위로 떠오르는 효과 */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

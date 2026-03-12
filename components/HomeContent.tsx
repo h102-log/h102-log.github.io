@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import PostList from '@/components/PostList';
 
 type PostItem = {
@@ -18,8 +20,22 @@ type HomeContentProps = {
 const ALL_TAG = '전체';
 
 export default function HomeContent({ allPosts }: HomeContentProps) {
+  // 메인 화면시작시 스크롤은 항상 최상단에 오도록
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []); 
+
   // 선택된 태그 배열(빈 배열이면 전체 보기)
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // 쿼리스트링에서 tag 값 읽어 초기 선택 태그로 반영
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tagParam = searchParams.get('tag');
+    if (tagParam && tagParam.trim() !== '') {
+      setSelectedTags([tagParam]);
+    }
+  }, [searchParams]);
 
   const tagCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -89,8 +105,31 @@ export default function HomeContent({ allPosts }: HomeContentProps) {
 
   const initialPosts = tagFilteredPosts.slice(0, 10);
 
-  return (
+ return (
     <main className="main-container home-layout">
+      
+      {/* [비즈니스 로직 의도]: 스크린 리더기 등 웹 접근성(a11y)을 고려하여 
+          핵심 콘텐츠인 '글 목록'이 보조 네비게이션인 '태그'보다 HTML DOM 상에서 먼저 오도록 배치합니다. */}
+      <div className="home-main-content">
+        <section className="post-list-section">
+          <div className="section-headline">
+            <h2>목록</h2>
+            <p>{tagFilteredPosts.length} posts</p>
+          </div>
+
+          {tagFilteredPosts.length === 0 ? (
+            <p className="empty-post-message">조건에 맞는 글이 없습니다.</p>
+          ) : (
+            <PostList
+              key={selectedTags.length === 0 ? ALL_TAG : selectedTags.slice().sort().join('|')}
+              initialPosts={initialPosts}
+              allPosts={tagFilteredPosts}
+            ></PostList>
+          )}
+        </section>
+      </div>
+
+      {/* [Design]: 메인 콘텐츠 우측에 배치될 태그 사이드바 */}
       <aside className="home-sidebar" aria-label="태그 목록">
         <h2 className="sidebar-title">태그</h2>
         <ul className="sidebar-category-list">
@@ -113,32 +152,7 @@ export default function HomeContent({ allPosts }: HomeContentProps) {
           })}
         </ul>
       </aside>
-
-      <div className="home-main-content">
-        <header className="blog-header home-hero">
-          <p className="hero-kicker"></p>
-          <p className="hero-description"></p>
-        </header>
-
-        <section className="post-list-section">
-          <div className="section-headline">
-            <h2>Writing</h2>
-            <p>
-              {tagFilteredPosts.length} posts
-            </p>
-          </div>
-
-          {tagFilteredPosts.length === 0 ? (
-            <p className="empty-post-message">조건에 맞는 글이 없습니다.</p>
-          ) : (
-            <PostList
-              key={selectedTags.length === 0 ? ALL_TAG : selectedTags.slice().sort().join('|')}
-              initialPosts={initialPosts}
-              allPosts={tagFilteredPosts}
-            ></PostList>
-          )}
-        </section>
-      </div>
+      
     </main>
   );
 }
