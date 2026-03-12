@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, FormEvent, PointerEvent as ReactPointerEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, Children, FormEvent, isValidElement, PointerEvent as ReactPointerEvent, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -18,6 +18,12 @@ type PendingImageUpload = {
   imageFilePath: string;
   publicImagePath: string;
   altText: string;
+};
+type PendingAttachmentUpload = {
+  file: File;
+  attachmentFilePath: string;
+  publicAttachmentPath: string;
+  originalFileName: string;
 };
 type ResizeDirection = 'horizontal' | 'vertical' | 'diagonal';
 type ImageSize = {
@@ -236,6 +242,101 @@ function removeMarkdownImageByIndex(markdown: string, targetImageIndex: number) 
   return removedMarkdown.replace(/\n{3,}/g, '\n\n').trimEnd();
 }
 
+// 첨부파일 링크는 본문 하단 "## 첨부파일" 섹션에 누적합니다.
+// 의도: 독자가 포스트 끝에서 다운로드 자원을 한 번에 확인하도록 UI 흐름을 고정합니다.
+function appendAttachmentLinksToContent(markdown: string, attachmentLines: string[]) {
+  const trimmedMarkdown = markdown.trimEnd();
+  const attachmentSectionTitle = '## 첨부파일';
+  const uniqueAttachmentLines = attachmentLines.filter(Boolean);
+
+  if (uniqueAttachmentLines.length === 0) {
+    return markdown;
+  }
+
+  if (!trimmedMarkdown) {
+    return `${attachmentSectionTitle}\n${uniqueAttachmentLines.join('\n')}\n`;
+  }
+
+  if (trimmedMarkdown.includes(attachmentSectionTitle)) {
+    return `${trimmedMarkdown}\n${uniqueAttachmentLines.join('\n')}\n`;
+  }
+
+  return `${trimmedMarkdown}\n\n${attachmentSectionTitle}\n${uniqueAttachmentLines.join('\n')}\n`;
+}
+
+function normalizeAttachmentPath(pathValue: string) {
+  const trimmedPath = pathValue.trim();
+
+  if (!trimmedPath) {
+    return '';
+  }
+
+  const decodedPath = (() => {
+    try {
+      return decodeURIComponent(trimmedPath);
+    } catch {
+      return trimmedPath;
+    }
+  })();
+
+  return decodedPath
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/\/+/g, '/')
+    .replace(/\/+$/g, '');
+}
+
+function isSameAttachmentPath(leftPath: string, rightPath: string) {
+  const normalizedLeft = normalizeAttachmentPath(leftPath);
+  const normalizedRight = normalizeAttachmentPath(rightPath);
+
+  if (!normalizedLeft || !normalizedRight) {
+    return false;
+  }
+
+  if (normalizedLeft === normalizedRight) {
+    return true;
+  }
+
+  return normalizedLeft.endsWith(normalizedRight) || normalizedRight.endsWith(normalizedLeft);
+}
+
+function removeAttachmentLinkByPath(markdown: string, attachmentPath: string) {
+  const lines = markdown
+    .split('\n')
+    .filter((line) => {
+      const linkMatch = /\[[^\]]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)/.exec(line);
+
+      if (!linkMatch) {
+        return true;
+      }
+
+      const linkedPath = linkMatch[1];
+
+      if (!linkedPath.includes('/files/')) {
+        return true;
+      }
+
+      return !isSameAttachmentPath(linkedPath, attachmentPath);
+    });
+  const attachmentSectionTitle = '## 첨부파일';
+  const sectionStartIndex = lines.findIndex((line) => line.trim() === attachmentSectionTitle);
+
+  if (sectionStartIndex >= 0) {
+    const nextHeadingIndex = lines.findIndex((line, index) => (
+      index > sectionStartIndex && /^##\s+/.test(line.trim())
+    ));
+    const sectionEndIndex = nextHeadingIndex >= 0 ? nextHeadingIndex : lines.length;
+    const sectionBody = lines.slice(sectionStartIndex + 1, sectionEndIndex);
+    const hasAttachmentItem = sectionBody.some((line) => /\[[^\]]+\]\(\/files\//.test(line));
+
+    if (!hasAttachmentItem) {
+      lines.splice(sectionStartIndex, sectionEndIndex - sectionStartIndex);
+    }
+  }
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd();
+}
+
 // ReactMarkdown의 img 렌더 시 원문 순서(index)를 안정적으로 매핑하기 위한 플러그인입니다.
 // 의도: DOM 조작 없이도 "몇 번째 이미지"인지 식별해 정렬/리사이즈/삭제를 정확히 적용하기 위함.
 // 연계: components.img -> data-image-index -> handleAlignChange / handleImageResizePointerDown / handleDeleteImage
@@ -284,9 +385,10 @@ export default function AdminEditor() {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('post');
   const [localPreviewImageMap, setLocalPreviewImageMap] = useState<Record<string, string>>({});
   const [pendingImageUploadMap, setPendingImageUploadMap] = useState<Record<string, PendingImageUpload>>({});
+  const [pendingAttachmentUploadMap, setPendingAttachmentUploadMap] = useState<Record<string, PendingAttachmentUpload>>({});
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingAsset, setIsUploadingAsset] = useState(false);
   const [resizingImageIndex, setResizingImageIndex] = useState<number | null>(null);
   const [previewImageSizeMap, setPreviewImageSizeMap] = useState<Record<number, ImageSize>>({});
   const [previewImageRatioMap, setPreviewImageRatioMap] = useState<Record<number, number>>({});
@@ -296,6 +398,7 @@ export default function AdminEditor() {
   const [previewImageAlignMap, setPreviewImageAlignMap] = useState<Record<number, ImageAlign | null>>({});
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const imageFileInputRef = useRef<HTMLInputElement | null>(null);
+  const attachmentFileInputRef = useRef<HTMLInputElement | null>(null);
   const resizeSessionRef = useRef<{
     imageIndex: number;
     direction: ResizeDirection;
@@ -478,7 +581,7 @@ export default function AdminEditor() {
   // 의도: 미리보기 상태와 저장 텍스트를 동일하게 유지해 새로고침/재편집에도 동일한 결과를 보장합니다.
   const handleAlignChange = (imageIndex: number, align: ImageAlign | null) => {
     setPreviewImageAlignMap((previousMap) => ({ ...previousMap, [imageIndex]: align }));
-    setContent((previousContent) => updateMarkdownImageAlignByIndex(previousContent, imageIndex, align));
+    setContent((previousContent) => updateMarkdownImageAlignByIndex(previousContent, imageIndex, align)); 
   };
 
   const handleDeleteImage = (imageIndex: number, imagePath: string) => {
@@ -488,7 +591,7 @@ export default function AdminEditor() {
     // 3) 정렬/크기/비율 캐시 정리
     // 의도: 화면에서만 사라지는 "유령 상태"를 방지하고, 커밋 시 실제 반영 데이터와 완전히 일치시킵니다.
     setContent((previousContent) => removeMarkdownImageByIndex(previousContent, imageIndex));
-    setSelectedImageIndex(null);
+    setSelectedImageIndex(null); 
     setStatusMessage('이미지를 본문에서 삭제했습니다. 커밋 시 반영됩니다.');
 
     setPendingImageUploadMap((previousMap) => {
@@ -548,6 +651,20 @@ export default function AdminEditor() {
     });
   };
 
+  const handleDeleteAttachment = (attachmentPath: string) => {
+    setContent((previousContent) => removeAttachmentLinkByPath(previousContent, attachmentPath));
+    setPendingAttachmentUploadMap((previousMap) => {
+      if (!(attachmentPath in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      delete nextMap[attachmentPath];
+      return nextMap;
+    });
+    setStatusMessage('첨부파일을 본문에서 삭제했습니다. 커밋 시 반영됩니다.');
+  };
+
   const handleImageUpload = async (pendingUploads: PendingImageUpload[]) => {
     // 이 함수는 "업로드 전담"이며, 커밋 여부 판단은 handleCommit에서 담당합니다.
     // 의도: 업로드 책임을 분리해 실패 지점(권한/브랜치/네트워크)을 명확히 추적하기 위함입니다.
@@ -556,7 +673,7 @@ export default function AdminEditor() {
       return [] as string[];
     }
 
-    setIsUploadingImage(true);
+    setIsUploadingAsset(true);
     setStatusMessage('이미지를 업로드하는 중입니다...');
     try {
       const uploadedPublicImagePathList: string[] = [];
@@ -597,7 +714,59 @@ export default function AdminEditor() {
       setStatusMessage(error instanceof Error ? error.message : '이미지 업로드 중 오류가 발생했습니다.');
       throw error;
     } finally {
-      setIsUploadingImage(false);
+      setIsUploadingAsset(false);
+    }
+  };
+
+  const handleAttachmentUpload = async (pendingUploads: PendingAttachmentUpload[]) => {
+    if (pendingUploads.length === 0) {
+      setStatusMessage('업로드할 첨부파일을 선택해 주세요.');
+      return [] as string[];
+    }
+
+    setIsUploadingAsset(true);
+    setStatusMessage('첨부파일을 업로드하는 중입니다...');
+
+    try {
+      const uploadedPublicAttachmentPathList: string[] = [];
+
+      for (const pendingUpload of pendingUploads) {
+        const { file, attachmentFilePath, publicAttachmentPath } = pendingUpload;
+        const contentApiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${attachmentFilePath}`;
+        const encodedFileContent = await encodeFileToBase64(file);
+
+        const uploadResponse = await fetch(contentApiUrl, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${githubToken.trim()}`,
+            Accept: 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: `docs: upload attachment ${computedSlug || 'draft'}`,
+            content: encodedFileContent,
+            branch: branch.trim() || DEFAULT_BRANCH,
+          }),
+        });
+
+        if (!uploadResponse.ok) {
+          const errorPayload = await uploadResponse.json().catch(() => ({}));
+          const message = typeof errorPayload?.message === 'string'
+            ? errorPayload.message
+            : '첨부파일 업로드에 실패했습니다.';
+          throw new Error(message);
+        }
+
+        uploadedPublicAttachmentPathList.push(publicAttachmentPath);
+      }
+
+      setStatusMessage(`${pendingUploads.length}개의 첨부파일 업로드 완료`);
+      return uploadedPublicAttachmentPathList;
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : '첨부파일 업로드 중 오류가 발생했습니다.');
+      throw error;
+    } finally {
+      setIsUploadingAsset(false);
     }
   };
 
@@ -660,9 +829,54 @@ export default function AdminEditor() {
     event.target.value = '';
   };
 
+  const handleAttachmentFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    const safeSlug = computedSlug || 'draft';
+    const timestamp = Date.now();
+
+    const pendingUploads = files.map((file, index) => {
+      const safeFileName = sanitizeFileName(file.name);
+      const publicAttachmentPath = `/files/posts/${safeSlug}/${timestamp}-${index}-${safeFileName}`;
+
+      return {
+        file,
+        attachmentFilePath: `public${publicAttachmentPath}`,
+        publicAttachmentPath,
+        originalFileName: file.name,
+      };
+    });
+
+    setPendingAttachmentUploadMap((previousMap) => {
+      const nextMap = { ...previousMap };
+
+      pendingUploads.forEach((pendingUpload) => {
+        nextMap[pendingUpload.publicAttachmentPath] = pendingUpload;
+      });
+
+      return nextMap;
+    });
+
+    const attachmentLines = pendingUploads.map((pendingUpload) => (
+      `- [${pendingUpload.originalFileName}](${pendingUpload.publicAttachmentPath} "download")`
+    ));
+
+    setContent((previousContent) => appendAttachmentLinksToContent(previousContent, attachmentLines));
+    setStatusMessage(`${pendingUploads.length}개의 첨부파일을 추가했습니다. GitHub에 커밋 시 함께 업로드됩니다.`);
+    event.target.value = '';
+  };
+
   const handleOpenImagePicker = () => {
     // 파일 input을 숨기고 버튼으로 트리거하는 방식으로 UI 복잡도를 낮춥니다.
     imageFileInputRef.current?.click();
+  };
+
+  const handleOpenAttachmentPicker = () => {
+    attachmentFileInputRef.current?.click();
   };
 
   const handleCommit = async (event: FormEvent<HTMLFormElement>) => {
@@ -712,6 +926,7 @@ export default function AdminEditor() {
       finalMarkdownText.push('---', '', content.trimEnd());
 
       const pendingUploadsForCommit = Object.values(pendingImageUploadMap);
+      const pendingAttachmentUploadsForCommit = Object.values(pendingAttachmentUploadMap);
 
       if (pendingUploadsForCommit.length > 0) {
         setStatusMessage(`커밋 전 이미지 ${pendingUploadsForCommit.length}개를 업로드하는 중입니다...`);
@@ -721,6 +936,21 @@ export default function AdminEditor() {
           const nextMap = { ...previousMap };
 
           uploadedPublicImagePathList.forEach((uploadedPath) => {
+            delete nextMap[uploadedPath];
+          });
+
+          return nextMap;
+        });
+      }
+
+      if (pendingAttachmentUploadsForCommit.length > 0) {
+        setStatusMessage(`커밋 전 첨부파일 ${pendingAttachmentUploadsForCommit.length}개를 업로드하는 중입니다...`);
+        const uploadedPublicAttachmentPathList = await handleAttachmentUpload(pendingAttachmentUploadsForCommit);
+
+        setPendingAttachmentUploadMap((previousMap) => {
+          const nextMap = { ...previousMap };
+
+          uploadedPublicAttachmentPathList.forEach((uploadedPath) => {
             delete nextMap[uploadedPath];
           });
 
@@ -786,6 +1016,7 @@ export default function AdminEditor() {
       }
 
       setPendingImageUploadMap({});
+      setPendingAttachmentUploadMap({});
       setStatusMessage(`커밋 완료: ${filePath}`);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
@@ -862,17 +1093,27 @@ export default function AdminEditor() {
           </label>
         </div>
 
-        <label className="admin-field admin-field-wide">
+        <div className="admin-field admin-field-wide">
           <div className="admin-content-header">
-            <span>본문 (Markdown)</span>
-            <button
-              type="button"
-              className="admin-inline-image-button"
-              onClick={handleOpenImagePicker}
-              disabled={isUploadingImage}
-            >
-              {isUploadingImage ? '업로드 중...' : 'IMG +'}
-            </button>
+            <label htmlFor="admin-content-textarea" className="admin-content-label">본문 (Markdown)</label>
+            <div className="admin-content-actions">
+              <button
+                type="button"
+                className="admin-inline-image-button"
+                onClick={handleOpenImagePicker}
+                disabled={isUploadingAsset}
+              >
+                {isUploadingAsset ? '업로드 중...' : 'IMG +'}
+              </button>
+              <button
+                type="button"
+                className="admin-inline-image-button"
+                onClick={handleOpenAttachmentPicker}
+                disabled={isUploadingAsset}
+              >
+                {isUploadingAsset ? '업로드 중...' : 'FILE +'}
+              </button>
+            </div>
           </div>
 
           <input
@@ -884,7 +1125,16 @@ export default function AdminEditor() {
             className="admin-hidden-file-input"
           />
 
+          <input
+            ref={attachmentFileInputRef}
+            type="file"
+            multiple
+            onChange={handleAttachmentFileChange}
+            className="admin-hidden-file-input"
+          />
+
           <textarea
+            id="admin-content-textarea"
             ref={contentTextareaRef}
             className="admin-content-textarea"
             value={content}
@@ -892,10 +1142,10 @@ export default function AdminEditor() {
             placeholder="## 제목\n\n본문을 작성하세요."
             required
           />
-        </label>
+        </div>
 
         <div className="admin-editor-actions">
-          <button type="submit" disabled={isSubmitting || isUploadingImage} className="admin-primary-button">
+          <button type="submit" disabled={isSubmitting || isUploadingAsset} className="admin-primary-button">
             {isSubmitting ? '커밋 중...' : 'GitHub에 커밋'}
           </button>
         </div>
@@ -961,6 +1211,53 @@ export default function AdminEditor() {
                   remarkPlugins={[remarkGfm, remarkBreaks, remarkAssignImageIndices]}
                   rehypePlugins={[rehypeHighlight]}
                   components={{
+                    // float 이미지가 포함된 <p>는 p를 제거해 Fragment로 반환합니다. 
+                    // 의도: ReactMarkdown이 이미지를 <p>로 감싸는데, float된 이미지가 p 안에 갇히면
+                    //       다음 텍스트 단락이 같은 BFC에서 float를 인식하지 못해 줄 위치가 틀어집니다.
+                    //       p를 없애면 float 이미지와 텍스트가 같은 컨테이너(admin-post-content) BFC에서
+                    //       올바르게 처리되어 텍스트가 이미지 옆으로 정확히 흐릅니다.
+                    p: ({ children }) => {
+                      const hasImageWrap = Children.toArray(children).some(
+                        (child) =>
+                          isValidElement(child) &&
+                          typeof (child.props as Record<string, unknown>).className === 'string' &&
+                          ((child.props as Record<string, unknown>).className as string).includes('admin-resizable-image-wrap'),
+                      );
+                      return hasImageWrap ? <>{children}</> : <p>{children}</p>;
+                    },
+                    a: ({ href, title: linkTitle, children }) => {
+                      if (typeof href !== 'string') {
+                        return <>{children}</>;
+                      }
+
+                      const isAttachmentLink = href.startsWith('/files/');
+
+                      if (!isAttachmentLink) {
+                        return (
+                          <a href={href} title={linkTitle}>
+                            {children}
+                          </a>
+                        );
+                      }
+
+                      return (
+                        <span className="admin-attachment-preview-item" onClick={(event) => event.stopPropagation()}>
+                          <a href={href} title={linkTitle} className="post-download-link" download>
+                            {children}
+                          </a>
+                          <button
+                            type="button"
+                            className="admin-attachment-delete-button"
+                            aria-label="첨부파일 삭제"
+                            onClick={() => handleDeleteAttachment(href)}
+                            //가로폭 50px
+                            style={{ width: '50px', height: '24px', marginLeft: '8px' }}
+                          >
+                            삭제
+                          </button>
+                        </span>
+                      );
+                    },
                     img: ({ src, alt, title: imageTitle, node }) => {
                       if (typeof src !== 'string' || !src) {
                         return null;
@@ -983,10 +1280,11 @@ export default function AdminEditor() {
                       const resolvedAlign = imageIndex in previewImageAlignMap
                         ? previewImageAlignMap[imageIndex]
                         : parseImageAlignFromTitle(imageTitle);
+                      // float 이미지 하단 margin을 크게 잡아 width-chip(bottom:-1.65rem)과 다음 텍스트가 겹치지 않게 합니다.
                       const alignStyle = resolvedAlign === 'left'
-                        ? { float: 'left' as const, margin: '0 16px 12px 0' }
+                        ? { float: 'left' as const, margin: '0 16px 2.5rem 0' }
                         : resolvedAlign === 'right'
-                        ? { float: 'right' as const, margin: '0 0 12px 16px' }
+                        ? { float: 'right' as const, margin: '0 0 2.5rem 16px' }
                         : resolvedAlign === 'center'
                         ? { marginLeft: 'auto', marginRight: 'auto' }
                         : {};

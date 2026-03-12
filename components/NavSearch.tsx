@@ -4,12 +4,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 type NavSearchPost = {
-  id: string;
+  id: string;  
   title: string;
   description: string;
 };
 
-type NavSearchProps = {
+type NavSearchProps = { 
   posts: NavSearchPost[];
 };
 
@@ -81,7 +81,7 @@ export default function NavSearch({ posts }: NavSearchProps) {
               setIsSearchModalOpen(true);
             }
           }}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) => setSearchQuery(event.target.value)}  
        />
    
       </div>
