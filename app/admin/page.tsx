@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AdminGate from '@/components/AdminGate';
 import AdminEditor from '@/components/AdminEditor';
 
 export const metadata: Metadata = {
@@ -18,13 +17,11 @@ export default function AdminPage() {
         <p className="hero-kicker">ADMIN</p>
         <h1>웹 에디터</h1>
         <p className="hero-description">
-          글 작성 후 마크다운 파일을 다운로드하거나 GitHub 저장소로 바로 커밋할 수 있습니다.
+          글을 작성한 뒤 GitHub 저장소로 바로 커밋할 수 있습니다.
         </p>
       </header>
 
-      <AdminGate>
-        <AdminEditor />
-      </AdminGate>
+      <AdminEditor />
     </main>
   );
 }

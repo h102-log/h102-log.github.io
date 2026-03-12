@@ -1,4 +1,5 @@
 :root {
+  --post-content-max-width: 760px;
   --background-color: #f8fafc;
   --surface-color: #ffffff;
   --text-primary: #0f172a;
@@ -36,7 +37,7 @@ a {
 
 .main-container,
 .post-detail-container {
-  max-width: 760px;
+  max-width: var(--post-content-max-width);
   margin: 0 auto;
   padding: 56px 20px;
   animation: reveal 0.35s ease-out;
@@ -702,15 +703,17 @@ a {
 }
 
 .admin-page-container {
-  max-width: 1440px;
+  max-width: 1640px;
   min-width: 1240px;
 }
 
 .admin-editor-wrap {
   display: grid;
-  grid-template-columns: minmax(680px, 760px) minmax(460px, 1fr);
+  /* 우측 컬럼은 preview section의 padding/border를 포함해 실제 본문 영역이 760px이 되도록 계산합니다. */
+  grid-template-columns: minmax(680px, var(--post-content-max-width)) minmax(0, calc(var(--post-content-max-width) + 2rem + 2px));
   gap: 1.1rem;
   align-items: start;
+  justify-content: center;
 }
 
 .admin-gate-card {
@@ -910,7 +913,7 @@ a {
   /* [비즈니스 로직 의도]: 고정 width 대신 100%로 설정하여 뷰포트보다 좁은 환경에서도
      불필요한 가로 스크롤이 생기지 않도록 합니다. max-width로 최대 너비를 유지합니다. */
   width: 100%;
-  max-width: 760px;
+  max-width: var(--post-content-max-width);
 }
 
 .admin-preview-post-viewport {

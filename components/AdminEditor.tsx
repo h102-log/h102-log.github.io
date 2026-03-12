@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, PointerEvent as ReactPointerEvent, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 
@@ -34,6 +35,8 @@ const MAX_PREVIEW_IMAGE_HEIGHT = 1200;
 const IMAGE_SIZE_TOKEN_PATTERN = /\b([wh])\s*=\s*(\d{2,4})\b/gi;
 const MARKDOWN_IMAGE_PATTERN = /!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)/g;
 
+// 한글 제목도 URL slug로 사용할 수 있도록 허용하는 슬러그 생성 규칙입니다.
+// 의도: 작성자가 입력한 제목을 URL 친화적으로 정규화해 포스트 파일명 충돌을 줄입니다.
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -43,10 +46,14 @@ function slugify(value: string) {
     .replace(/-+/g, '-');
 }
 
+// frontmatter가 single quote를 사용하므로 값 내부 quote를 먼저 이스케이프합니다.
+// 의도: YAML 파싱 에러를 사전에 방지해 커밋 실패를 줄입니다.
 function escapeSingleQuote(value: string) {
   return value.replace(/'/g, "\\'");
 }
 
+// GitHub Contents API는 base64 본문을 요구하므로 UTF-8 안전 인코딩을 사용합니다.
+// 의도: 한글/특수문자 포함 문서가 깨지지 않도록 인코딩 일관성을 보장합니다.
 function encodeBase64Utf8(value: string) {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
@@ -58,11 +65,27 @@ function encodeBase64Utf8(value: string) {
   return window.btoa(binary);
 }
 
+// 저장소 경로로 쓰일 파일명을 정규화합니다.
+// 의도: 운영체제/브라우저별 허용 문자 차이로 인한 업로드 실패를 줄입니다.
 function sanitizeFileName(value: string) {
   return value
     .trim()
     .replace(/[^\w.-ㄱ-ㅎㅏ-ㅣ가-힣]/g, '-')
     .replace(/-+/g, '-');
+}
+
+// 글 메타데이터의 날짜를 커밋 시점 기준으로 고정하기 위한 포맷터입니다.
+// 의도: 사용자가 수동 입력한 값이 아닌 "실제 배포/반영 시각"을 남겨 운영 이력과 맞추기 위함.
+// 연계: handleCommit -> setDate(commitDateTime) -> finalMarkdownText(date)
+function formatCurrentDateTime() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 async function encodeFileToBase64(file: File) {
@@ -77,14 +100,19 @@ async function encodeFileToBase64(file: File) {
   return window.btoa(binary);
 }
 
+// 편집 UI 안정성을 위해 이미지 너비 상한/하한을 강제합니다.
+// 의도: 극단적인 값 입력으로 레이아웃이 깨지는 것을 방지합니다.
 function clampImageWidth(width: number) {
   return Math.max(MIN_PREVIEW_IMAGE_WIDTH, Math.min(MAX_PREVIEW_IMAGE_WIDTH, Math.round(width)));
 }
 
+// 높이도 동일한 정책으로 제한해 리사이즈 UX를 일관되게 유지합니다.
 function clampImageHeight(height: number) {
   return Math.max(MIN_PREVIEW_IMAGE_HEIGHT, Math.min(MAX_PREVIEW_IMAGE_HEIGHT, Math.round(height)));
 }
 
+// markdown 이미지 title에서 크기 토큰(w/h)을 파싱합니다.
+// 의도: 본문 기반 상태 복원을 통해 새로고침 이후에도 미리보기 크기를 재현합니다.
 function parseImageSizeFromTitle(title?: string | null): Partial<ImageSize> {
   if (typeof title !== 'string') {
     return {};
@@ -118,6 +146,8 @@ function parseImageSizeFromTitle(title?: string | null): Partial<ImageSize> {
   };
 }
 
+// 기존 title 메타정보를 보존한 채 크기 토큰만 갱신합니다.
+// 의도: align 등 다른 토큰과의 호환성을 유지하기 위함입니다.
 function buildImageTitleWithSize(existingTitle: string | undefined, size: ImageSize) {
   const normalizedWidth = clampImageWidth(size.width);
   const normalizedHeight = typeof size.height === 'number' ? clampImageHeight(size.height) : undefined;
@@ -134,6 +164,8 @@ function buildImageTitleWithSize(existingTitle: string | undefined, size: ImageS
   return cleanedTitle ? `${cleanedTitle} ${tokens.join(' ')}` : tokens.join(' ');
 }
 
+// 특정 index의 markdown 이미지만 업데이트합니다.
+// 의도: 다중 이미지 본문에서 의도하지 않은 대량 치환을 방지합니다.
 function updateMarkdownImageSizeByIndex(markdown: string, targetImageIndex: number, size: ImageSize) {
   let currentImageIndex = -1;
 
@@ -149,6 +181,8 @@ function updateMarkdownImageSizeByIndex(markdown: string, targetImageIndex: numb
   });
 }
 
+// title의 align 토큰을 enum으로 해석합니다.
+// 의도: UI 값과 본문 문자열 간 변환 규칙을 단일화합니다.
 function parseImageAlignFromTitle(title?: string | null): ImageAlign | undefined {
   if (typeof title !== 'string') {
     return undefined;
@@ -184,6 +218,27 @@ function updateMarkdownImageAlignByIndex(markdown: string, targetImageIndex: num
   });
 }
 
+// 선택한 이미지 구문만 본문에서 제거합니다.
+// 의도: 삭제 후 불필요한 빈 줄을 정리해 markdown 가독성을 유지합니다.
+function removeMarkdownImageByIndex(markdown: string, targetImageIndex: number) {
+  let currentImageIndex = -1;
+
+  const removedMarkdown = markdown.replace(MARKDOWN_IMAGE_PATTERN, (fullMatch) => {
+    currentImageIndex += 1;
+
+    if (currentImageIndex !== targetImageIndex) {
+      return fullMatch;
+    }
+
+    return '';
+  });
+
+  return removedMarkdown.replace(/\n{3,}/g, '\n\n').trimEnd();
+}
+
+// ReactMarkdown의 img 렌더 시 원문 순서(index)를 안정적으로 매핑하기 위한 플러그인입니다.
+// 의도: DOM 조작 없이도 "몇 번째 이미지"인지 식별해 정렬/리사이즈/삭제를 정확히 적용하기 위함.
+// 연계: components.img -> data-image-index -> handleAlignChange / handleImageResizePointerDown / handleDeleteImage
 function remarkAssignImageIndices() {
   return (tree: { type?: string; children?: Array<Record<string, unknown>> }) => {
     let imageIndex = 0;
@@ -221,20 +276,22 @@ export default function AdminEditor() {
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(formatCurrentDateTime());
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
   const [thumbnail, setThumbnail] = useState('');
   const [content, setContent] = useState('');
   const [previewMode, setPreviewMode] = useState<PreviewMode>('post');
   const [localPreviewImageMap, setLocalPreviewImageMap] = useState<Record<string, string>>({});
+  const [pendingImageUploadMap, setPendingImageUploadMap] = useState<Record<string, PendingImageUpload>>({});
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [resizingImageIndex, setResizingImageIndex] = useState<number | null>(null);
   const [previewImageSizeMap, setPreviewImageSizeMap] = useState<Record<number, ImageSize>>({});
   const [previewImageRatioMap, setPreviewImageRatioMap] = useState<Record<number, number>>({});
-  // 현재 클릭으로 선택된 이미지 인덱스 (배치 팝업 표시용)
+  // 현재 선택된 이미지 인덱스입니다.
+  // 의도: 팝업 UI(정렬/삭제)를 단일 선택 상태로 고정해 동시 편집 충돌을 줄입니다.
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [previewImageAlignMap, setPreviewImageAlignMap] = useState<Record<number, ImageAlign | null>>({});
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -266,6 +323,8 @@ export default function AdminEditor() {
       .filter(Boolean);
   }, [tags]);
 
+  // 미리보기 탭은 "저장될 최종 markdown"을 사람이 검증하기 위한 용도입니다.
+  // 의도: 커밋 전에 메타데이터와 본문이 기대 형식인지 확인하도록 지원합니다.
   const markdownText = useMemo(() => {
     const frontmatterLines = [
       '---',
@@ -291,6 +350,8 @@ export default function AdminEditor() {
     return frontmatterLines.join('\n');
   }, [title, date, description, normalizedTags, thumbnail, content]);
 
+  // 커밋 대상 파일 경로를 slug 기반으로 고정합니다.
+  // 의도: 에디터 UI/미리보기/커밋 API가 동일 경로를 바라보게 하여 혼선을 줄입니다.
   const filePath = `posts/${computedSlug}.md`;
 
   const handleImageResizePointerDown = (
@@ -300,6 +361,8 @@ export default function AdminEditor() {
     direction: ResizeDirection,
     fallbackRatio: number,
   ) => {
+    // 포인터 세션 기반으로 리사이즈를 처리해 드래그 중에도 부드럽게 미리보기 값을 반영합니다.
+    // 최종 포인터 업 시점에만 markdown 본문을 갱신해 잦은 문자열 재생성 비용을 줄입니다.
     event.preventDefault();
 
     const safeRatio = fallbackRatio > 0 ? fallbackRatio : DEFAULT_PREVIEW_IMAGE_RATIO;
@@ -386,6 +449,8 @@ export default function AdminEditor() {
   };
 
   const insertTextIntoContent = (text: string) => {
+    // 커서 위치 삽입을 유지해 작성 흐름을 끊지 않기 위한 유틸입니다.
+    // 의도: 이미지 버튼으로 본문 중간 삽입 시 사용자가 직접 위치를 다시 찾지 않게 합니다.
     const textarea = contentTextareaRef.current;
 
     if (!textarea) {
@@ -409,24 +474,95 @@ export default function AdminEditor() {
     });
   };
 
-  // 이미지 배치(float) 변경 후 마크다운 title의 align 토큰에 반영
+  // 이미지 정렬 UI 변경을 markdown title 토큰으로 역직렬화합니다.
+  // 의도: 미리보기 상태와 저장 텍스트를 동일하게 유지해 새로고침/재편집에도 동일한 결과를 보장합니다.
   const handleAlignChange = (imageIndex: number, align: ImageAlign | null) => {
     setPreviewImageAlignMap((previousMap) => ({ ...previousMap, [imageIndex]: align }));
     setContent((previousContent) => updateMarkdownImageAlignByIndex(previousContent, imageIndex, align));
   };
 
+  const handleDeleteImage = (imageIndex: number, imagePath: string) => {
+    // 순서도:
+    // 1) 본문에서 이미지 markdown 제거
+    // 2) 업로드 대기 목록/로컬 프리뷰 URL 정리
+    // 3) 정렬/크기/비율 캐시 정리
+    // 의도: 화면에서만 사라지는 "유령 상태"를 방지하고, 커밋 시 실제 반영 데이터와 완전히 일치시킵니다.
+    setContent((previousContent) => removeMarkdownImageByIndex(previousContent, imageIndex));
+    setSelectedImageIndex(null);
+    setStatusMessage('이미지를 본문에서 삭제했습니다. 커밋 시 반영됩니다.');
+
+    setPendingImageUploadMap((previousMap) => {
+      if (!(imagePath in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      delete nextMap[imagePath];
+      return nextMap;
+    });
+
+    setLocalPreviewImageMap((previousMap) => {
+      if (!(imagePath in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      const objectUrl = previousMap[imagePath];
+
+      if (typeof objectUrl === 'string' && objectUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(objectUrl);
+      }
+
+      delete nextMap[imagePath];
+      return nextMap;
+    });
+
+    setPreviewImageAlignMap((previousMap) => {
+      if (!(imageIndex in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      delete nextMap[imageIndex];
+      return nextMap;
+    });
+
+    setPreviewImageSizeMap((previousMap) => {
+      if (!(imageIndex in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      delete nextMap[imageIndex];
+      return nextMap;
+    });
+
+    setPreviewImageRatioMap((previousMap) => {
+      if (!(imageIndex in previousMap)) {
+        return previousMap;
+      }
+
+      const nextMap = { ...previousMap };
+      delete nextMap[imageIndex];
+      return nextMap;
+    });
+  };
+
   const handleImageUpload = async (pendingUploads: PendingImageUpload[]) => {
+    // 이 함수는 "업로드 전담"이며, 커밋 여부 판단은 handleCommit에서 담당합니다.
+    // 의도: 업로드 책임을 분리해 실패 지점(권한/브랜치/네트워크)을 명확히 추적하기 위함입니다.
     if (pendingUploads.length === 0) {
       setStatusMessage('업로드할 이미지 파일을 선택해 주세요.');
-      return;
+      return [] as string[];
     }
 
     setIsUploadingImage(true);
     setStatusMessage('이미지를 업로드하는 중입니다...');
-
     try {
+      const uploadedPublicImagePathList: string[] = [];
+
       for (const pendingUpload of pendingUploads) {
-        const { file, imageFilePath } = pendingUpload;
+        const { file, imageFilePath, publicImagePath } = pendingUpload;
         const contentApiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${imageFilePath}`;
         const encodedFileContent = await encodeFileToBase64(file);
 
@@ -451,17 +587,28 @@ export default function AdminEditor() {
             : '이미지 업로드에 실패했습니다.';
           throw new Error(message);
         }
+
+        uploadedPublicImagePathList.push(publicImagePath);
       }
 
       setStatusMessage(`${pendingUploads.length}개의 이미지 업로드 완료`);
+      return uploadedPublicImagePathList;
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : '이미지 업로드 중 오류가 발생했습니다.');
+      throw error;
     } finally {
       setIsUploadingImage(false);
     }
   };
 
-  const handleImageFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    // 순서도:
+    // 1) 파일 선택
+    // 2) 본문 markdown 삽입
+    // 3) pendingImageUploadMap에 적재(아직 서버 업로드 X)
+    // 4) localPreviewImageMap으로 즉시 미리보기
+    // 의도: 작성 중 네트워크 의존성을 제거해 편집 반응성을 유지하고,
+    //       최종 커밋 시점에만 원자적으로 업로드+문서 반영을 수행하기 위함입니다.
     const files = Array.from(event.target.files ?? []);
 
     if (files.length === 0) {
@@ -483,6 +630,16 @@ export default function AdminEditor() {
       };
     });
 
+    setPendingImageUploadMap((previousMap) => {
+      const nextMap = { ...previousMap };
+
+      pendingUploads.forEach((pendingUpload) => {
+        nextMap[pendingUpload.publicImagePath] = pendingUpload;
+      });
+
+      return nextMap;
+    });
+
     const markdownImage = pendingUploads
       .map((pendingUpload) => `![${pendingUpload.altText}](${pendingUpload.publicImagePath} "w=${DEFAULT_PREVIEW_IMAGE_WIDTH}")`)
       .join('\n\n');
@@ -499,39 +656,22 @@ export default function AdminEditor() {
       return nextMap;
     });
 
-    if (!githubToken.trim()) {
-      setStatusMessage('본문에는 이미지 경로를 삽입했고, 미리보기는 로컬 파일로 표시됩니다. 커밋 전 토큰으로 업로드해 주세요.'); 
-      event.target.value = '';
-      return;
-    }
-
-    await handleImageUpload(pendingUploads);
+    setStatusMessage(`${pendingUploads.length}개의 이미지를 선택했습니다. GitHub에 커밋 시 함께 업로드됩니다.`);
     event.target.value = '';
   };
 
   const handleOpenImagePicker = () => {
+    // 파일 input을 숨기고 버튼으로 트리거하는 방식으로 UI 복잡도를 낮춥니다.
     imageFileInputRef.current?.click();
   };
 
-  const handleDownload = () => {
-    if (!computedSlug) {
-      setStatusMessage('slug가 비어 있어 파일을 다운로드할 수 없습니다.');
-      return;
-    }
-
-    const blob = new Blob([markdownText], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${computedSlug}.md`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    setStatusMessage('마크다운 파일을 다운로드했습니다.');
-  };
-
   const handleCommit = async (event: FormEvent<HTMLFormElement>) => {
+    // 순서도(핵심 비즈니스 트랜잭션):
+    // 1) 필수값/권한 검증
+    // 2) 커밋 시각 확정(date)
+    // 3) pending 이미지 업로드
+    // 4) md 파일 create/update 커밋
+    // 의도: "이미지는 없고 문서만 올라간 상태"를 최소화하고, 운영자가 기대하는 단일 커밋 경험을 보장합니다.
     event.preventDefault();
 
     if (!githubToken.trim()) {
@@ -548,6 +688,48 @@ export default function AdminEditor() {
     setStatusMessage('GitHub에 커밋하는 중입니다...');
 
     try {
+      const commitDateTime = formatCurrentDateTime();
+      setDate(commitDateTime);
+      const finalMarkdownText = [
+        '---',
+        `title: '${escapeSingleQuote(title.trim())}'`,
+        `date: '${commitDateTime}'`,
+        `description: '${escapeSingleQuote(description.trim())}'`,
+      ];
+
+      if (normalizedTags.length === 1) {
+        finalMarkdownText.push(`tag: '${escapeSingleQuote(normalizedTags[0])}'`);
+      }
+
+      if (normalizedTags.length > 1) {
+        finalMarkdownText.push(`tag: [${normalizedTags.map((tag) => `'${escapeSingleQuote(tag)}'`).join(', ')}]`);
+      }
+
+      if (thumbnail.trim()) {
+        finalMarkdownText.push(`thumbnail: '${escapeSingleQuote(thumbnail.trim())}'`);
+      }
+
+      finalMarkdownText.push('---', '', content.trimEnd());
+
+      const pendingUploadsForCommit = Object.values(pendingImageUploadMap);
+
+      if (pendingUploadsForCommit.length > 0) {
+        setStatusMessage(`커밋 전 이미지 ${pendingUploadsForCommit.length}개를 업로드하는 중입니다...`);
+        const uploadedPublicImagePathList = await handleImageUpload(pendingUploadsForCommit);
+
+        setPendingImageUploadMap((previousMap) => {
+          const nextMap = { ...previousMap };
+
+          uploadedPublicImagePathList.forEach((uploadedPath) => {
+            delete nextMap[uploadedPath];
+          });
+
+          return nextMap;
+        });
+      }
+
+      // 기존 파일 여부를 먼저 조회해 create/update 모드 정책을 강제합니다.
+      // 의도: 실수로 기존 글을 덮어쓰거나, 없는 글 수정 커밋을 차단합니다.
       const contentApiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}`;
       const headers = {
         Authorization: `Bearer ${githubToken.trim()}`,
@@ -573,9 +755,10 @@ export default function AdminEditor() {
       }
 
       if (mode === 'update' && !existingSha) {
-        throw new Error('수정할 파일을 찾을 수 없습니다. create 모드를 사용하거나 slug를 확인해 주세요.');
+        throw new Error('수정할 파일을 찾을 수 없습니다. create 모드를 사용하거나 slug를 확인해 주세요.'); 
       }
 
+      // commit message를 모드에 따라 분기해 변경 이력을 Git 로그에서 빠르게 추적할 수 있게 합니다.
       const commitMessage = mode === 'create'
         ? `docs: add post ${computedSlug}`
         : `docs: update post ${computedSlug}`;
@@ -588,7 +771,7 @@ export default function AdminEditor() {
         },
         body: JSON.stringify({
           message: commitMessage,
-          content: encodeBase64Utf8(markdownText),
+          content: encodeBase64Utf8(finalMarkdownText.join('\n')),
           branch: branch.trim() || DEFAULT_BRANCH,
           sha: existingSha,
         }),
@@ -602,6 +785,7 @@ export default function AdminEditor() {
         throw new Error(message);
       }
 
+      setPendingImageUploadMap({});
       setStatusMessage(`커밋 완료: ${filePath}`);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.');
@@ -650,7 +834,7 @@ export default function AdminEditor() {
 
           <label className="admin-field">
             <span>날짜</span>
-            <input type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
+            <input value={date} readOnly disabled />
           </label>
 
           <label className="admin-field">
@@ -711,10 +895,7 @@ export default function AdminEditor() {
         </label>
 
         <div className="admin-editor-actions">
-          <button type="button" onClick={handleDownload} className="admin-secondary-button">
-            md 다운로드
-          </button>
-          <button type="submit" disabled={isSubmitting} className="admin-primary-button">
+          <button type="submit" disabled={isSubmitting || isUploadingImage} className="admin-primary-button">
             {isSubmitting ? '커밋 중...' : 'GitHub에 커밋'}
           </button>
         </div>
@@ -770,9 +951,14 @@ export default function AdminEditor() {
                 </div>
               ) : null}
 
-              <div className="post-content admin-post-content" onClick={() => setSelectedImageIndex(null)}>
+              <div
+                className="post-content admin-post-content"
+                onClick={() => {
+                  setSelectedImageIndex(null);
+                }}
+              >
                 <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkAssignImageIndices]}
+                  remarkPlugins={[remarkGfm, remarkBreaks, remarkAssignImageIndices]}
                   rehypePlugins={[rehypeHighlight]}
                   components={{
                     img: ({ src, alt, title: imageTitle, node }) => {
@@ -809,9 +995,12 @@ export default function AdminEditor() {
                         <span
                           className={`admin-resizable-image-wrap ${resizingImageIndex === imageIndex ? 'admin-resizable-image-wrap-active' : ''}${selectedImageIndex === imageIndex ? ' admin-resizable-image-wrap-selected' : ''}`}
                           style={{ width: `min(100%, ${resolvedWidth}px)`, height: `${resolvedHeight}px`, ...alignStyle }}
-                          onClick={(event) => { event.stopPropagation(); setSelectedImageIndex(imageIndex); }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedImageIndex(imageIndex);
+                          }}
                         >
-                          <Image
+                          <Image 
                             src={previewSource}
                             alt={alt ?? 'post image'}
                             fill
@@ -824,10 +1013,19 @@ export default function AdminEditor() {
                                 ? event.currentTarget.naturalWidth / event.currentTarget.naturalHeight
                                 : DEFAULT_PREVIEW_IMAGE_RATIO;
 
-                              setPreviewImageRatioMap((previousMap) => ({
-                                ...previousMap,
-                                [imageIndex]: nextRatio,
-                              }));
+                              setPreviewImageRatioMap((previousMap) => {
+                                const previousRatio = previousMap[imageIndex];
+                                const isSameRatio = typeof previousRatio === 'number' && Math.abs(previousRatio - nextRatio) < 0.0001;
+
+                                if (isSameRatio) {
+                                  return previousMap;
+                                }
+
+                                return {
+                                  ...previousMap,
+                                  [imageIndex]: nextRatio,
+                                };
+                              });
                             }}
                           />
                           {/* 이미지 클릭 시 배치 팝업 — Image fill 뒤에 위치해야 z-index가 올바르게 적용됩니다 */}
@@ -863,6 +1061,16 @@ export default function AdminEditor() {
                                   × 해제
                                 </button>
                               )}
+                              <button
+                                type="button"
+                                className="admin-align-btn admin-align-btn-clear"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleDeleteImage(imageIndex, src);
+                                }}
+                              >
+                                삭제
+                              </button>
                             </span>
                           )}
                           <button
