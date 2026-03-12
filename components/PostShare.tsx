@@ -9,7 +9,9 @@ export default function PostShare() {
     try {
       // 최신 브라우저 클립보드 API (비동기)
       const url = window.location.href;
-      await navigator.clipboard.writeText(url);
+      //마지막 네비 부분 제거
+      const cleanedUrl = url.replace(/#.*$/, '');
+      await navigator.clipboard.writeText(cleanedUrl);
       setCopyMsg("링크가 복사되었습니다!");
       
       // 1.5초 후 알림창 닫기
