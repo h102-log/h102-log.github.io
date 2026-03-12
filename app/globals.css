@@ -362,45 +362,6 @@ a {
   letter-spacing: 0.02em;
 }
 
-.post-toc {
-  margin-bottom: 2rem;
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.post-toc-title {
-  margin-bottom: 0.75rem;
-  font-family: var(--font-terminal), "Consolas", monospace;
-  font-size: 0.78rem;
-  color: var(--heading-color);
-  letter-spacing: 0.04em;
-}
-
-.post-toc-list {
-  list-style: none;
-  display: grid;
-  gap: 0.45rem;
-}
-
-.post-toc-item {
-  color: var(--text-secondary);
-}
-
-.post-toc-level-3 {
-  padding-left: 1rem;
-}
-
-.post-toc-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.post-toc-link:hover {
-  color: var(--accent-color);
-}
-
 .back-button {
   display: inline-flex;
   align-items: center;
@@ -448,29 +409,6 @@ a {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-}
-
-.heading-anchor {
-  color: var(--muted-text);
-  font-family: var(--font-terminal), "Consolas", monospace;
-  font-size: 0.8em;
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity 0.2s ease, color 0.2s ease;
-}
-
-.post-content h1:hover .heading-anchor,
-.post-content h2:hover .heading-anchor,
-.post-content h3:hover .heading-anchor,
-.post-content h4:hover .heading-anchor,
-.post-content h5:hover .heading-anchor,
-.post-content h6:hover .heading-anchor,
-.heading-anchor:focus-visible {
-  opacity: 1;
-}
-
-.heading-anchor:hover {
-  color: var(--accent-color);
 }
 
 .post-content p,

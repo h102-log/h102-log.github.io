@@ -103,21 +103,6 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
           ) : null}
         </div>
       </header>
-
-      {postData.tableOfContents.length > 0 ? (
-        <nav className="post-toc" aria-label="이 글의 목차">
-          <p className="post-toc-title">On this page</p>
-          <ol className="post-toc-list">
-            {postData.tableOfContents.map((tableItem) => (
-              <li key={tableItem.id} className={`post-toc-item post-toc-level-${tableItem.level}`}>
-                <a href={`#${tableItem.id}`} className="post-toc-link">
-                  {tableItem.text}  
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      ) : null}
       
       {/* [주의사항/Edge Case]: 리액트에서는 보안상의 이유로 문자열 형태의 HTML을 바로 렌더링하지 않습니다.
           우리가 직접 파싱한 안전한 HTML임을 보장하기 위해 'dangerouslySetInnerHTML' 속성을 사용해야 합니다. */}
