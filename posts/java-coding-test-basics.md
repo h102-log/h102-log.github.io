@@ -1,5 +1,5 @@
 ---
-title: Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴 글자수 길이 붖루 ㅏ느
+title: Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴
 date: "2026-03-12"
 description: Java 코딩 테스트에서 자주 출제되는 알고리즘과 실전 코드 패턴을 정리한 가이드입니다.
 tag:
@@ -37,7 +37,7 @@ public class InputExample {
         String[] input = br.readLine().split(" ");
         for (int i = 0; i < 3; i++) {
             arr[i] = Integer.parseInt(input[i]);
-        }
+        } 
         
         // StringBuilder로 출력 최적화 (많은 출력이 필요할 때)
         StringBuilder sb = new StringBuilder();

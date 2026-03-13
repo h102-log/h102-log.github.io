@@ -1345,13 +1345,13 @@ export default function AdminEditor() {
                         ? previewImageAlignMap[imageIndex]
                         : parseImageAlignFromTitle(imageTitle);
                       // float 이미지 하단 margin을 크게 잡아 width-chip(bottom:-1.65rem)과 다음 텍스트가 겹치지 않게 합니다.
-                      const alignStyle = resolvedAlign === 'left'
-                        ? { float: 'left' as const, margin: '0 16px 2.5rem 0' }
-                        : resolvedAlign === 'right'
-                        ? { float: 'right' as const, margin: '0 0 2.5rem 16px' }
-                        : resolvedAlign === 'center'
-                        ? { marginLeft: 'auto', marginRight: 'auto' }
-                        : {};
+                  const alignStyle = resolvedAlign === 'left'
+                      ? { float: 'left' as const, margin: '0 16px 2.5rem 0' }
+                      : resolvedAlign === 'right'
+                      ? { float: 'right' as const, margin: '0 0 2.5rem 16px' }
+                      : resolvedAlign === 'center'
+                      ? { display: 'block', marginLeft: 'auto', marginRight: 'auto', marginBottom: '2.5rem' }
+                      : { display: 'inline-block', marginBottom: '2.5rem' };
 
                       return (
                         <span
