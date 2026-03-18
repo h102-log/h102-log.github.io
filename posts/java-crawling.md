@@ -88,6 +88,8 @@ public class JsoupCrawlerDemo {
 `.isEmpty()`를 활용하여 예외 처리를 해주어야 합니다.
 그래야만 의도치 않은 빈 데이터 처리를 방지하고 안전한 로직을 구성할 수 있습니다.
 
+### 한계점
+
 그렇다면 이번에는 화면 하단에 있는 테이블의 데이터(TR)를 가져오고 싶다면 어떻게 해야 할까요?
 테이블 데이터를 추출하기 위해 다음과 같이 코드를 작성해 볼 수 있습니다.
 
@@ -123,7 +125,7 @@ tableRows.stream().forEach(row -> {
 동적 데이터까지 안정적으로 가져오려면 실제 브라우저를 띄워 JavaScript 실행 이후의 DOM을 읽어야 합니다.
 Java에서는 **Playwright**가 이 역할을 아주 잘 수행합니다.
 
-### 의존성 추가
+### 실습
 
 먼저 `pom.xml`에 Playwright 의존성을 추가합니다.
 
@@ -136,8 +138,6 @@ Java에서는 **Playwright**가 이 역할을 아주 잘 수행합니다.
   </dependency>
 </dependencies>
 ```
-
-### 동적으로 생성되는 tr 가져오기
 
 아래 코드는 Playwright로 페이지에 접속한 뒤, 비동기로 채워지는 테이블 행을 기다렸다가 데이터를 가져오는 예시입니다.
 
@@ -194,7 +194,7 @@ public class DynamicTrCrawlingSample {
 
 ---
 
-## 그런데 매번 Playwright.create() 하면 느립니다
+**그런데 매번 Playwright.create() 하면 느립니다**
 
 여기서 중요한 운영 이슈가 하나 있습니다.
 
