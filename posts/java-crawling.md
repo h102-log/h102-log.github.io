@@ -53,7 +53,7 @@ import org.jsoup.select.Elements;
 public class JsoupCrawlerDemo {
     public static void main(String[] args) {
         // 타겟 URL과 연결 타임아웃 설정
-        String targetUrl = "[https://h102-log.github.io/CrawlingTest.html](https://h102-log.github.io/CrawlingTest.html)";
+        String targetUrl = "https://h102-log.github.io/CrawlingTest.html";
         // 연결 타임아웃을 5초로 설정, 5초가 지나면 연결이 실패로 간주됩니다.
         int connectionTimeoutMs = 5000;
         try {
@@ -148,7 +148,7 @@ import com.microsoft.playwright.options.WaitForSelectorState;
 
 public class DynamicTrCrawlingSample {
     public static void main(String[] args) {
-        String targetUrl = "[https://h102-log.github.io/CrawlingTest.html](https://h102-log.github.io/CrawlingTest.html)";
+        String targetUrl = "https://h102-log.github.io/CrawlingTest.html";
 
         try (Playwright pw = Playwright.create();
              Browser browser = pw.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
