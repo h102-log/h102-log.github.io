@@ -123,7 +123,7 @@ tableRows.stream().forEach(row -> {
 동적 데이터까지 안정적으로 가져오려면 실제 브라우저를 띄워 JavaScript 실행 이후의 DOM을 읽어야 합니다.
 Java에서는 **Playwright**가 이 역할을 아주 잘 수행합니다.
 
-### 1) 의존성 추가
+### 의존성 추가
 
 먼저 `pom.xml`에 Playwright 의존성을 추가합니다.
 
@@ -137,7 +137,7 @@ Java에서는 **Playwright**가 이 역할을 아주 잘 수행합니다.
 </dependencies>
 ```
 
-### 2) 동적으로 생성되는 tr 가져오기
+### 동적으로 생성되는 tr 가져오기
 
 아래 코드는 Playwright로 페이지에 접속한 뒤, 비동기로 채워지는 테이블 행을 기다렸다가 데이터를 가져오는 예시입니다.
 
