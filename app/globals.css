@@ -31,12 +31,15 @@ html {
 html,
 body {
   min-height: 100%;
-  
 }
 
 body {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
-background: var(--background-color);
+  font-family:
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    sans-serif;
+  background: var(--background-color);
   color: var(--text-primary);
   line-height: 1.7;
 }
@@ -85,7 +88,7 @@ a {
   width: 100%;
   /* [방어적 코딩]: 컨테이너가 아무리 커져도 목차가 무한정 넓어지지 않고,
      폰트 크기(0.86rem)에 맞춰 읽기 좋은 최대 너비(260px)까지만 늘어나도록 제어합니다. */
-  max-width: 260px; 
+  max-width: 260px;
   position: sticky;
   top: 94px;
   align-self: start;
@@ -130,7 +133,10 @@ a {
   padding: 0.28rem 0.68rem;
   width: fit-content;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .sidebar-tag-count {
@@ -314,7 +320,9 @@ a {
   font-size: 0.95rem;
   padding: 0.6rem 0.75rem;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .post-search-input:focus {
@@ -331,7 +339,9 @@ a {
   font-size: 0.76rem;
   padding: 0.55rem 0.68rem;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .post-search-clear-button:hover {
@@ -424,7 +434,10 @@ a {
   font-size: 0.78rem;
   line-height: 1.3;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .back-button:hover {
@@ -472,7 +485,9 @@ a {
   line-height: 1.45;
   padding: 0.16rem 0.24rem;
   border-radius: 8px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .post-toc-link:hover {
@@ -540,7 +555,7 @@ a {
 }
 
 .post-content .post-download-link::before {
-  content: '↓';
+  content: "↓";
   font-size: 0.82rem;
 }
 
@@ -561,15 +576,79 @@ a {
 }
 
 .post-content pre {
-  margin: 1.3rem 0;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 12px 12px;
   overflow-x: auto;
+  background: #0f172a;
+  padding: 0.95rem 1rem;
 }
 
 .post-content code {
   font-family: var(--font-terminal), "Consolas", monospace;
   font-size: 0.93rem;
+}
+
+.post-content pre code {
+  display: grid;
+  min-width: max-content;
+  line-height: 1.65;
+}
+
+.post-content pre [data-line] {
+  padding: 0 0.1rem;
+}
+
+.post-code-block {
+  margin: 1.3rem 0;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.2);
+}
+
+.post-code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+  background: linear-gradient(90deg, #111827 0%, #0f172a 100%);
+}
+
+.post-code-language {
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.post-code-copy-button {
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: #0b1220;
+  color: #cbd5e1;
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.73rem;
+  line-height: 1;
+  padding: 0.38rem 0.68rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.post-code-copy-button:hover {
+  border-color: #38bdf8;
+  color: #e0f2fe;
+}
+
+.post-code-copy-button-copied {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  color: #bbf7d0;
 }
 
 .post-content :not(pre) > code {
@@ -594,10 +673,10 @@ a {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.78);
   text-decoration: none;
-  min-height: 100%; 
+  min-height: 100%;
 }
 /* 줄바뀜 방지 ... 처리*/
-.post-pagination-link > strong{
+.post-pagination-link > strong {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -731,7 +810,10 @@ a {
   font-family: var(--font-terminal), "Consolas", monospace;
   font-size: 0.75rem;
   line-height: 1.3;
-  transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .category-button:hover {
@@ -776,7 +858,10 @@ a {
 .admin-editor-wrap {
   display: grid;
   /* 우측 컬럼은 preview section의 padding/border를 포함해 실제 본문 영역이 760px이 되도록 계산합니다. */
-  grid-template-columns: minmax(680px, var(--post-content-max-width)) minmax(0, calc(var(--post-content-max-width) + 2rem + 2px));
+  grid-template-columns: minmax(680px, var(--post-content-max-width)) minmax(
+      0,
+      calc(var(--post-content-max-width) + 2rem + 2px)
+    );
   gap: 1.1rem;
   align-items: start;
   justify-content: center;
@@ -902,7 +987,10 @@ a {
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
 }
 
 .admin-inline-image-button:not(:disabled):hover {
@@ -1163,7 +1251,9 @@ a {
   font-size: 0.72rem;
   padding: 0.22rem 0.5rem;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .admin-align-btn:hover {
@@ -1195,7 +1285,7 @@ a {
 
 /* float 이미지 다음 컨텐츠 밀림 방지 */
 .admin-post-content::after {
-  content: '';
+  content: "";
   display: table;
   clear: both;
 }
@@ -1223,7 +1313,7 @@ a {
 
   /* [방어적 코딩]: 모바일(1단 그리드) 환경에서는 본문을 다시 1번째 열로 원복시켜 줍니다. */
   .post-detail-main {
-    grid-column: 1; 
+    grid-column: 1;
   }
 
   .post-toc-area {
@@ -1300,7 +1390,7 @@ a {
   .nav-container {
     align-items: stretch;
     flex-direction: column;
-    gap: 1rem; 
+    gap: 1rem;
   }
 
   .nav-search-area {
@@ -1321,7 +1411,7 @@ a {
   display: grid;
   /* 좌측 태그(240px) | 중앙 리스트(넓게 확장) | 우측 여백(240px) 
      우측에 보이지 않는 240px 공간을 두어 중앙 리스트가 화면 정중앙에 오도록 대칭을 맞춥니다. */
-  grid-template-columns: 240px minmax(0, 760px) 240px; 
+  grid-template-columns: 240px minmax(0, 760px) 240px;
   gap: 3rem;
   justify-content: center; /* 그리드 전체를 화면 가운데로 정렬 */
   align-items: start;
@@ -1329,20 +1419,22 @@ a {
 
 .home-sidebar {
   /* 기존 grid-column: 1; 에서 3번째 열(우측)로 변경합니다. */
-  grid-column: 3; 
+  grid-column: 3;
   position: sticky;
   top: 88px;
 }
 
 /* (참고용) 중앙 콘텐츠는 그대로 유지하시면 됩니다. */
 .home-main-content {
-  grid-column: 2; 
+  grid-column: 2;
   min-width: 0;
 }
 /* [방어적 코딩]: 화면이 좁아지는 태블릿/모바일 환경 대비 */
 @media (max-width: 1080px) {
   .main-container.home-layout {
-    max-width: var(--post-content-max-width); /* 모바일에서는 다시 좁은 폭으로 복귀 */
+    max-width: var(
+      --post-content-max-width
+    ); /* 모바일에서는 다시 좁은 폭으로 복귀 */
     grid-template-columns: 1fr; /* 1단 그리드로 변경하여 깨짐 방지 */
   }
 
@@ -1434,7 +1526,9 @@ a {
   color: #ffffff;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .share-button:hover {
@@ -1480,7 +1574,7 @@ a {
 
 /* 말풍선 아래쪽 뾰족한 꼬리 */
 .copy-toast-modal::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   right: 12px;

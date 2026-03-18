@@ -5,21 +5,21 @@
     <link>https://h102-log.github.io</link>
     <description>개발자 bh102의 기술 기록과 학습 내용을 정리하는 블로그입니다.</description>
     <language>ko</language>
-    <lastBuildDate>Thu, 12 Mar 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 15 Mar 2026 15:03:00 GMT</lastBuildDate>
     <atom:link href="https://h102-log.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Java 크롤링</title>
+      <link>https://h102-log.github.io/posts/java-crawling</link>
+      <guid>https://h102-log.github.io/posts/java-crawling</guid>
+      <pubDate>Sun, 15 Mar 2026 15:03:00 GMT</pubDate>
+      <description>Java로 크롤링 하는 방법</description>
+    </item>
     <item>
       <title>Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴</title>
       <link>https://h102-log.github.io/posts/java-coding-test-basics</link>
       <guid>https://h102-log.github.io/posts/java-coding-test-basics</guid>
       <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
       <description>Java 코딩 테스트에서 자주 출제되는 알고리즘과 실전 코드 패턴을 정리한 가이드입니다.</description>
-    </item>
-    <item>
-      <title>목차 테스트</title>
-      <link>https://h102-log.github.io/posts/mokcha-test</link>
-      <guid>https://h102-log.github.io/posts/mokcha-test</guid>
-      <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
-      <description>목차 테스트를 위한 샘플 포스트입니다.</description>
     </item>
   </channel>
 </rss>

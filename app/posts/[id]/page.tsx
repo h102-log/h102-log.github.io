@@ -1,16 +1,21 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 // 경로가 프로젝트 구조에 맞게 설정되었는지 확인해 주세요!
-import { getAllPostsData, getPostData, getPostNavigation } from '../../../src/lib/posts';
-import BackButton from '../../../components/BackButton';
-import PostToc from '../../../components/PostToc';
+import {
+  getAllPostsData,
+  getPostData,
+  getPostNavigation,
+} from "../../../src/lib/posts";
+import BackButton from "../../../components/BackButton";
+import PostToc from "../../../components/PostToc";
 // [비즈니스 로직 의도]: 클라이언트 상호작용(복사 알림)이 필요한 공유 버튼은 별도의 클라이언트 컴포넌트로 분리하여 임포트합니다.
-import PostShare from '../../../components/PostShare';
-import { formatDateToYmd } from '../../../src/lib/date';
-import { createAbsoluteUrl, siteConfig } from '../../../src/lib/site';
+import PostShare from "../../../components/PostShare";
+import PostCodeCopy from "../../../components/PostCodeCopy";
+import { formatDateToYmd } from "../../../src/lib/date";
+import { createAbsoluteUrl, siteConfig } from "../../../src/lib/site";
 
-// [방어적 코딩 및 Edge Case 처리]: 
+// [방어적 코딩 및 Edge Case 처리]:
 // 우리는 next.config.ts에서 'output: export' (정적 배포)를 설정했습니다.
 // 정적 사이트에서는 빌드하는 시점에 "어떤 어떤 id의 페이지들을 미리 만들어둬야 해?"를 Next.js가 전부 알고 있어야 합니다.
 // 이 함수가 모든 포스트의 id를 배열로 제공하여 빌드 에러를 방지합니다.
@@ -21,18 +26,24 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const params = await props.params;
 
   try {
     const postData = await getPostData(params.id);
     const postUrl = `/posts/${postData.id}`;
     const publishedTime = new Date(postData.date).toISOString();
-    const modifiedTime = new Date(postData.updatedAt ?? postData.date).toISOString();
-    const thumbnailUrl = postData.thumbnail ? createAbsoluteUrl(postData.thumbnail) : undefined;
+    const modifiedTime = new Date(
+      postData.updatedAt ?? postData.date,
+    ).toISOString();
+    const thumbnailUrl = postData.thumbnail
+      ? createAbsoluteUrl(postData.thumbnail)
+      : undefined;
     const tags = Array.isArray(postData.tag)
       ? postData.tag
-      : typeof postData.tag === 'string'
+      : typeof postData.tag === "string"
         ? [postData.tag]
         : [];
 
@@ -43,7 +54,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         canonical: postUrl,
       },
       openGraph: {
-        type: 'article',
+        type: "article",
         url: postUrl,
         title: postData.title,
         description: postData.description,
@@ -63,7 +74,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
           : undefined,
       },
       twitter: {
-        card: thumbnailUrl ? 'summary_large_image' : 'summary',
+        card: thumbnailUrl ? "summary_large_image" : "summary",
         title: postData.title,
         description: postData.description,
         images: thumbnailUrl ? [thumbnailUrl] : undefined,
@@ -71,7 +82,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     };
   } catch {
     return {
-      title: '글을 찾을 수 없습니다',
+      title: "글을 찾을 수 없습니다",
       robots: {
         index: false,
         follow: false,
@@ -94,16 +105,17 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
   }
 
   const { previousPost, nextPost, relatedPosts } = getPostNavigation(params.id);
-  
+
   // [방어적 코딩]: 메타데이터에서 처리한 것과 동일하게, 본문에서도 tag 데이터를 안전한 배열 형태로 정제합니다.
   const tags = Array.isArray(postData.tag)
     ? postData.tag
-    : typeof postData.tag === 'string' && postData.tag.trim() !== ''
+    : typeof postData.tag === "string" && postData.tag.trim() !== ""
       ? [postData.tag]
       : [];
 
   return (
     <article className="post-detail-container">
+      <PostCodeCopy />
       <div className="post-detail-layout">
         <div className="post-detail-main">
           <BackButton />
@@ -112,7 +124,9 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
             <div className="post-meta-row">
               <p className="post-date">{formatDateToYmd(postData.date)}</p>
               {postData.updatedAt ? (
-                <p className="post-updated-at">업데이트 {formatDateToYmd(postData.updatedAt)}</p>
+                <p className="post-updated-at">
+                  업데이트 {formatDateToYmd(postData.updatedAt)}
+                </p>
               ) : null}
             </div>
           </header>
@@ -128,7 +142,17 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
           <div className="post-end-section">
             {tags.length > 0 ? (
               <div className="post-end-tags">
-                <svg className="tag-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="tag-icon"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                   <line x1="7" y1="7" x2="7.01" y2="7"></line>
                 </svg>
@@ -157,7 +181,10 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
           {previousPost || nextPost ? (
             <nav className="post-pagination" aria-label="글 이동">
               {previousPost ? (
-                <Link href={`/posts/${previousPost.id}`} className="post-pagination-link post-pagination-prev">
+                <Link
+                  href={`/posts/${previousPost.id}`}
+                  className="post-pagination-link post-pagination-prev"
+                >
                   <span className="post-pagination-label">이전 글</span>
                   <strong>{previousPost.title}</strong>
                 </Link>
@@ -166,7 +193,10 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
               )}
 
               {nextPost ? (
-                <Link href={`/posts/${nextPost.id}`} className="post-pagination-link post-pagination-next">
+                <Link
+                  href={`/posts/${nextPost.id}`}
+                  className="post-pagination-link post-pagination-next"
+                >
                   <span className="post-pagination-label">다음 글</span>
                   <strong>{nextPost.title}</strong>
                 </Link>
@@ -177,7 +207,10 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
           ) : null}
 
           {relatedPosts.length > 0 ? (
-            <section className="related-posts-section" aria-labelledby="related-posts-heading">
+            <section
+              className="related-posts-section"
+              aria-labelledby="related-posts-heading"
+            >
               <div className="section-headline related-posts-headline">
                 <h2 id="related-posts-heading">관련 글</h2>
               </div>
@@ -185,12 +218,22 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
               <ul className="related-posts-list">
                 {relatedPosts.map((relatedPost) => (
                   <li key={relatedPost.id} className="related-post-item">
-                    <Link href={`/posts/${relatedPost.id}`} className="related-post-link">
+                    <Link
+                      href={`/posts/${relatedPost.id}`}
+                      className="related-post-link"
+                    >
                       <div className="related-post-main">
-                        <h3 className="related-post-title">{relatedPost.title}</h3>
-                        <p className="related-post-description">{relatedPost.description}</p>
+                        <h3 className="related-post-title">
+                          {relatedPost.title}
+                        </h3>
+                        <p className="related-post-description">
+                          {relatedPost.description}
+                        </p>
                       </div>
-                      <time className="related-post-date" dateTime={relatedPost.date}>
+                      <time
+                        className="related-post-date"
+                        dateTime={relatedPost.date}
+                      >
                         {formatDateToYmd(relatedPost.date)}
                       </time>
                     </Link>
