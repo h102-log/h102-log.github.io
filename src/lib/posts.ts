@@ -7,7 +7,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
 import type { Options as RehypePrettyCodeOptions } from "rehype-pretty-code";
-import rehypeStringify from "rehype-stringify";
+import rehypeStringify from "rehype-stringify";  
 
 type HtmlNode = {
   type: string;
