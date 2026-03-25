@@ -11,7 +11,7 @@ React를 단순히 사용하는 것을 넘어, 실무 수준에서 성능과 유
 
 ---
 
-## 1. JSX와 가상 돔 (Virtual DOM) 🧠
+## JSX와 가상 돔 (Virtual DOM) 🧠
 
 React에서 작성하는 HTML 같은 코드는 사실 **JSX(JavaScript XML)**입니다. 브라우저는 이를 이해하지 못하므로, 빌드 과정에서 순수한 자바스크립트 객체로 변환됩니다.
 
@@ -27,7 +27,7 @@ function Greeting({ name }) {
 // React.createElement('h1', null, `안녕하세요, ${name}님!`)
 ```
 
-## 2. 상태 관리와 useState 📸
+## 상태 관리와 useState 📸
 
 화면을 다시 그리게(리렌더링) 만드는 핵심 트리거는 **상태(State)**입니다.
 
@@ -61,7 +61,7 @@ function Counter() {
 }
 ```
 
-## 3. useEffect와 클로저의 함정 🧹
+## useEffect와 클로저의 함정 🧹
 
 외부 시스템과의 동기화(API 호출, 타이머 등)를 위해 사용합니다.
 
@@ -88,7 +88,7 @@ function Timer() {
 }
 ```
 
-## 4. 관심사의 분리와 커스텀 훅 (Custom Hooks) 🎣
+## 관심사의 분리와 커스텀 훅 (Custom Hooks) 🎣
 
 UI를 담당하는 컴포넌트와 비즈니스 로직을 분리하는 것은 실무의 기본입니다.
 
@@ -121,7 +121,7 @@ function CounterB() {
 }
 ```
 
-## 5. Props Drilling 해결: Context API 📦
+## Props Drilling 해결: Context API 📦
 
 부모에서 깊은 자식까지 데이터를 전달할 때 발생하는 **Props Drilling**을 해결하기 위해 전역 상태 관리 도구를 사용합니다.
 
