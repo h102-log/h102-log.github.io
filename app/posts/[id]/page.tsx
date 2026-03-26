@@ -12,6 +12,7 @@ import PostToc from "../../../components/PostToc";
 // [비즈니스 로직 의도]: 클라이언트 상호작용(복사 알림)이 필요한 공유 버튼은 별도의 클라이언트 컴포넌트로 분리하여 임포트합니다.
 import PostShare from "../../../components/PostShare";
 import PostCodeCopy from "../../../components/PostCodeCopy";
+import PostGroupPanel from "../../../components/PostGroupPanel";
 import { formatDateToYmd } from "../../../src/lib/date";
 import { createAbsoluteUrl, siteConfig } from "../../../src/lib/site";
 
@@ -104,7 +105,8 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const { previousPost, nextPost, relatedPosts } = getPostNavigation(params.id);
+  const { previousPost, nextPost, relatedPosts, groupPosts, groupName } =
+    getPostNavigation(params.id);
 
   // [방어적 코딩]: 메타데이터에서 처리한 것과 동일하게, 본문에서도 tag 데이터를 안전한 배열 형태로 정제합니다.
   const tags = Array.isArray(postData.tag)
@@ -130,6 +132,14 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
               ) : null}
             </div>
           </header>
+
+          {groupName && groupPosts.length > 0 ? (
+            <PostGroupPanel
+              groupName={groupName}
+              groupPosts={groupPosts}
+              currentPostId={postData.id}
+            />
+          ) : null}
 
           {/* [주의사항/Edge Case]: 리액트에서는 보안상의 이유로 문자열 형태의 HTML을 바로 렌더링하지 않습니다.
               우리가 직접 파싱한 안전한 HTML임을 보장하기 위해 'dangerouslySetInnerHTML' 속성을 사용해야 합니다. */}
@@ -212,7 +222,7 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
               aria-labelledby="related-posts-heading"
             >
               <div className="section-headline related-posts-headline">
-                <h2 id="related-posts-heading">관련 글</h2>
+                <h2 id="related-posts-heading">추천 글</h2>
               </div>
 
               <ul className="related-posts-list">

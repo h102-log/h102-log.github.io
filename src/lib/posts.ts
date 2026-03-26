@@ -7,7 +7,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
 import type { Options as RehypePrettyCodeOptions } from "rehype-pretty-code";
-import rehypeStringify from "rehype-stringify";  
+import rehypeStringify from "rehype-stringify";
 
 type HtmlNode = {
   type: string;
@@ -35,6 +35,7 @@ export type PostSummary = {
   date: string;
   description: string;
   tag?: string[];
+  group?: string;
   updatedAt?: string;
   draft?: boolean;
   thumbnail?: string;
@@ -44,6 +45,8 @@ export type PostNavigation = {
   previousPost: PostSummary | null;
   nextPost: PostSummary | null;
   relatedPosts: PostSummary[];
+  groupPosts: PostSummary[];
+  groupName?: string;
 };
 
 type PostFrontmatter = {
@@ -51,6 +54,7 @@ type PostFrontmatter = {
   date: string;
   description: string;
   tag?: string | string[];
+  group?: string;
   category?: string | string[];
   updatedAt?: string;
   draft?: boolean;
@@ -352,6 +356,7 @@ function parseValidFrontmatter(data: unknown): PostFrontmatter | null {
     description,
     // 하위 호환을 위해 기존 category 키도 tag로 병합해 처리합니다.
     tag: normalizeTags(frontmatter.tag ?? frontmatter.category),
+    group: normalizeText(frontmatter.group),
     updatedAt: normalizeText(frontmatter.updatedAt),
     draft: typeof frontmatter.draft === "boolean" ? frontmatter.draft : false,
     thumbnail: normalizeText(frontmatter.thumbnail),
@@ -444,6 +449,15 @@ function getSharedTagCount(
   return leftTags.filter((tag) => rightTagSet.has(tag)).length;
 }
 
+function pickRandomPost(posts: PostSummary[]): PostSummary | null {
+  if (posts.length === 0) {
+    return null;
+  }
+
+  const randomIndex = Math.floor(Math.random() * posts.length);
+  return posts[randomIndex] ?? null;
+}
+
 export function getPostNavigation(id: string): PostNavigation {
   const allPosts = getAllPostsData() as PostSummary[];
   const currentPostIndex = allPosts.findIndex((post) => post.id === id);
@@ -453,6 +467,8 @@ export function getPostNavigation(id: string): PostNavigation {
       previousPost: null,
       nextPost: null,
       relatedPosts: [],
+      groupPosts: [],
+      groupName: undefined,
     };
   }
 
@@ -465,15 +481,22 @@ export function getPostNavigation(id: string): PostNavigation {
 
   const nextPost = currentPostIndex > 0 ? allPosts[currentPostIndex - 1] : null;
 
-  const relatedPosts = allPosts
-    .filter((post) => post.id !== id)
-    .map((post) => ({
-      post,
-      sharedTagCount: getSharedTagCount(currentPost.tag, post.tag),
-      dateDistance: Math.abs(
-        getDateValue(currentPost.date) - getDateValue(post.date),
-      ),
-    }))
+  const candidates = allPosts.filter((post) => post.id !== id);
+  const maxRelatedPosts = Math.min(3, candidates.length);
+  const selectedIdSet = new Set<string>();
+  let hasRandomPick = false;
+
+  const scoreByTagAndDate = (post: PostSummary) => ({
+    post,
+    sharedTagCount: getSharedTagCount(currentPost.tag, post.tag),
+    dateDistance: Math.abs(
+      getDateValue(currentPost.date) - getDateValue(post.date),
+    ),
+  });
+
+  const sortedGroupCandidates = candidates
+    .filter((post) => currentPost.group && post.group === currentPost.group)
+    .map(scoreByTagAndDate)
     .sort((left, right) => {
       if (right.sharedTagCount !== left.sharedTagCount) {
         return right.sharedTagCount - left.sharedTagCount;
@@ -485,13 +508,96 @@ export function getPostNavigation(id: string): PostNavigation {
 
       return getDateValue(right.post.date) - getDateValue(left.post.date);
     })
-    .slice(0, 3)
     .map(({ post }) => post);
+
+  const sortedTagCandidates = candidates
+    .filter(
+      (post) =>
+        (!currentPost.group || post.group !== currentPost.group) &&
+        getSharedTagCount(currentPost.tag, post.tag) > 0,
+    )
+    .map(scoreByTagAndDate)
+    .sort((left, right) => {
+      if (right.sharedTagCount !== left.sharedTagCount) {
+        return right.sharedTagCount - left.sharedTagCount;
+      }
+
+      if (left.dateDistance !== right.dateDistance) {
+        return left.dateDistance - right.dateDistance;
+      }
+
+      return getDateValue(right.post.date) - getDateValue(left.post.date);
+    })
+    .map(({ post }) => post);
+
+  const relatedPosts: PostSummary[] = [];
+
+  const takeByPriority = (priorityPosts: PostSummary[]) => {
+    for (const post of priorityPosts) {
+      if (relatedPosts.length >= maxRelatedPosts) {
+        return;
+      }
+
+      if (selectedIdSet.has(post.id)) {
+        continue;
+      }
+
+      relatedPosts.push(post);
+      selectedIdSet.add(post.id);
+    }
+  };
+
+  takeByPriority(sortedGroupCandidates);
+  takeByPriority(sortedTagCandidates);
+
+  while (relatedPosts.length < maxRelatedPosts) {
+    const remainingCandidates = candidates.filter(
+      (post) => !selectedIdSet.has(post.id),
+    );
+    const randomPost = pickRandomPost(remainingCandidates);
+
+    if (!randomPost) {
+      break;
+    }
+
+    relatedPosts.push(randomPost);
+    selectedIdSet.add(randomPost.id);
+    hasRandomPick = true;
+  }
+
+  if (!hasRandomPick && relatedPosts.length > 0) {
+    const remainingCandidates = candidates.filter(
+      (post) => !selectedIdSet.has(post.id),
+    );
+    const forcedRandomPost = pickRandomPost(remainingCandidates);
+
+    if (forcedRandomPost) {
+      relatedPosts[relatedPosts.length - 1] = forcedRandomPost;
+      hasRandomPick = true;
+    }
+  }
+
+  const groupName = currentPost.group;
+  const groupPosts = groupName
+    ? allPosts
+        .filter((post) => post.group === groupName)
+        .sort((left, right) => {
+          const dateDiff = getDateValue(left.date) - getDateValue(right.date);
+
+          if (dateDiff !== 0) {
+            return dateDiff;
+          }
+
+          return left.title.localeCompare(right.title, "ko");
+        })
+    : [];
 
   return {
     previousPost,
     nextPost,
     relatedPosts,
+    groupPosts,
+    groupName,
   };
 }
 

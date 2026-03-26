@@ -76,7 +76,6 @@ a {
   width: 100%;
   min-height: 100vh;
   padding: 56px 20px;
-  animation: reveal 0.35s ease-out;
 }
 
 .post-detail-layout {
@@ -715,6 +714,146 @@ a {
   margin-top: 2.5rem;
 }
 
+.post-group-section {
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid #d5dbe3;
+  background: #eceff3;
+}
+
+.post-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.post-group-head h2 {
+  font-size: 2rem;
+  color: var(--heading-color);
+}
+
+.post-group-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.post-group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.36rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.15rem 0;
+  cursor: pointer;
+  font-size: 1.08rem;
+}
+
+.post-group-chevron {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.post-group-chevron-open {
+  transform: rotate(180deg);
+}
+
+.post-group-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.post-group-position {
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.82rem;
+  color: var(--muted-text);
+  margin-right: 0.3rem;
+}
+
+.post-group-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background: #f8fafc;
+  color: #0f766e;
+  text-decoration: none;
+  font-size: 1rem;
+  line-height: 1;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.post-group-arrow:hover {
+  border-color: #5eead4;
+  background: #ecfeff;
+}
+
+.post-group-arrow:active {
+  transform: scale(0.96);
+}
+
+.post-group-arrow-disabled {
+  color: #9ca3af;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.post-group-list {
+  margin: 0.65rem 0 0;
+  padding-left: 1.4rem;
+  display: grid;
+  gap: 0.38rem;
+}
+
+.post-group-item {
+  color: var(--text-secondary);
+}
+
+.post-group-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.post-group-link:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.post-group-link-current {
+  color: var(--heading-color);
+}
+
+@media (max-width: 640px) {
+  .post-group-section {
+    padding: 1rem;
+  }
+
+  .post-group-head h2 {
+    font-size: 1.7rem;
+  }
+
+  .post-group-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .post-group-toggle {
+    font-size: 1rem;
+  }
+}
+
 .related-posts-headline {
   margin-bottom: 0.85rem;
 }
@@ -947,13 +1086,19 @@ a {
 }
 
 .global-footer {
-  text-align: center;
+  padding: 0;
   padding: 2.2rem 20px;
   border-top: 1px solid var(--border-color);
   color: var(--muted-text);
   font-family: var(--font-terminal), "Consolas", monospace;
   font-size: 0.8rem;
   margin-top: 3rem;
+}
+
+.post-group-arrow-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
 }
 
 .empty-post-message {
