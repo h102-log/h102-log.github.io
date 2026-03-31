@@ -45,7 +45,10 @@ export default function PostGroupPanel({
       : null;
 
   return (
-    <section className="post-group-section" aria-labelledby="post-group-heading">
+    <section
+      className="post-group-section"
+      aria-labelledby="post-group-heading"
+    >
       <div className="post-group-head">
         <h2 id="post-group-heading">{groupName}</h2>
       </div>
