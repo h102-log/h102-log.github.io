@@ -7,6 +7,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypePrettyCode from "rehype-pretty-code";
 import type { Options as RehypePrettyCodeOptions } from "rehype-pretty-code";
+import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 
 type HtmlNode = {
@@ -625,7 +626,8 @@ export async function getPostData(id: string) {
   const processedContent = await remark()
     .use(remarkParse)
     .use(remarkBreaks)
-    .use(remarkRehype)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
     .use(rehypeCollectTocAndApplyHeadingId, { tocItems })
     .use(rehypeApplyImageWidthFromTitle)
     .use(rehypeApplyAttachmentDownload)
