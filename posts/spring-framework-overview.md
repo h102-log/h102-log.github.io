@@ -1,7 +1,7 @@
 ---
 title: "[Spring] Spring Framework란"
 date: "2026-04-02 10:00"
-description: "Spring Framework가 무엇인지, 왜 개발자들이 Spring을 사용하는지, 그리고 Spring의 핵심 철학과 장점에 대해 알아봅니다."
+description: "Spring Framework가 무엇인지"
 tag: "spring"
 group: "Spring Framework 완전 정복"
 ---
