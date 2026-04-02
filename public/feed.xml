@@ -5,8 +5,50 @@
     <link>https://h102-log.github.io</link>
     <description>개발자 bh102의 기술 기록과 학습 내용을 정리하는 블로그입니다.</description>
     <language>ko</language>
-    <lastBuildDate>Sun, 15 Mar 2026 15:03:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 02 Apr 2026 01:00:00 GMT</lastBuildDate>
     <atom:link href="https://h102-log.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Spring] Spring Framework란</title>
+      <link>https://h102-log.github.io/posts/spring-framework-overview</link>
+      <guid>https://h102-log.github.io/posts/spring-framework-overview</guid>
+      <pubDate>Thu, 02 Apr 2026 01:00:00 GMT</pubDate>
+      <description>Spring Framework가 무엇인지</description>
+    </item>
+    <item>
+      <title>inline-block 요소 사이 원치 않는 여백 제거하기</title>
+      <link>https://h102-log.github.io/posts/css-inline-block-gap</link>
+      <guid>https://h102-log.github.io/posts/css-inline-block-gap</guid>
+      <pubDate>Wed, 01 Apr 2026 03:00:00 GMT</pubDate>
+      <description>display: inline-block 요소 사이에 생기는 약 4px 공백의 원인과 실무 해결 방법</description>
+    </item>
+    <item>
+      <title>Tailwind CSS 포지셔닝 정렬 기법</title>
+      <link>https://h102-log.github.io/posts/tailwind-positioning</link>
+      <guid>https://h102-log.github.io/posts/tailwind-positioning</guid>
+      <pubDate>Tue, 31 Mar 2026 06:00:00 GMT</pubDate>
+      <description>top-0, transform, translate 등을 활용한 우측 중앙·아래 중앙 정렬 기법 (Tailwind CSS)</description>
+    </item>
+    <item>
+      <title>[React] useEffect 완전 정리</title>
+      <link>https://h102-log.github.io/posts/react-use-effect</link>
+      <guid>https://h102-log.github.io/posts/react-use-effect</guid>
+      <pubDate>Thu, 26 Mar 2026 10:41:00 GMT</pubDate>
+      <description>useEffect의 실행 시점, 의존성 배열, 정리 함수 정리</description>
+    </item>
+    <item>
+      <title>[React] useState 완전 정리</title>
+      <link>https://h102-log.github.io/posts/react-use-state</link>
+      <guid>https://h102-log.github.io/posts/react-use-state</guid>
+      <pubDate>Thu, 26 Mar 2026 10:40:00 GMT</pubDate>
+      <description>useState의 동작 원리와 실무 사용 패턴 정리</description>
+    </item>
+    <item>
+      <title>js some()함수</title>
+      <link>https://h102-log.github.io/posts/js-some</link>
+      <guid>https://h102-log.github.io/posts/js-some</guid>
+      <pubDate>Sun, 22 Mar 2026 14:23:00 GMT</pubDate>
+      <description>js some()함수 사용법</description>
+    </item>
     <item>
       <title>Java 크롤링</title>
       <link>https://h102-log.github.io/posts/java-crawling</link>
@@ -15,11 +57,11 @@
       <description>Java로 크롤링 하는 방법</description>
     </item>
     <item>
-      <title>Java 코딩 테스트 기초 - 자주 쓰이는 알고리즘과 패턴</title>
-      <link>https://h102-log.github.io/posts/java-coding-test-basics</link>
-      <guid>https://h102-log.github.io/posts/java-coding-test-basics</guid>
-      <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
-      <description>Java 코딩 테스트에서 자주 출제되는 알고리즘과 실전 코드 패턴을 정리한 가이드입니다.</description>
+      <title>React 실무 기초 정리</title>
+      <link>https://h102-log.github.io/posts/react-study-1</link>
+      <guid>https://h102-log.github.io/posts/react-study-1</guid>
+      <pubDate>Sun, 15 Mar 2026 15:03:00 GMT</pubDate>
+      <description>렌더링 원리부터 전역 상태 관리까지 React 핵심 개념 정리</description>
     </item>
   </channel>
 </rss>

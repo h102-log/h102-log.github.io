@@ -46,8 +46,8 @@ body {
 
 body {
   font-family:
-    "Pretendard Variable",
-    Pretendard,
+    var(--font-body),
+    "Noto Sans KR",
     -apple-system,
     sans-serif;
   background: var(--background-color);

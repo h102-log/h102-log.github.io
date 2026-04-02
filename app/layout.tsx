@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 // 우리가 앞서 작성한 글로벌 스타일을 불러옵니다.
 import "./globals.css";
 import Link from "next/link";
-import { IBM_Plex_Sans_KR, JetBrains_Mono } from "next/font/google";
+import {
+  IBM_Plex_Sans_KR,
+  JetBrains_Mono,
+  Noto_Sans_KR,
+} from "next/font/google";
 import { getAllPostsData } from "@/src/lib/posts";
 import { createAbsoluteUrl, siteConfig } from "@/src/lib/site";
 import NavSearch from "@/components/NavSearch";
@@ -18,6 +22,13 @@ const terminalFont = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-terminal",
+  display: "swap",
+});
+
+const bodyFont = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -61,19 +72,9 @@ export default function RootLayout({
   return (
     // [주의사항/Edge Case 방어]: 접근성을 위해 웹 문서의 언어를 한국어(ko)로 명시합니다.
     <html lang="ko">
-      <head>
-        {/* Pretendard 웹폰트 적용 */}
-        <link
-          rel="preload"
-          as="style"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
-        />
-      </head>
-      <body className={`${headingFont.variable} ${terminalFont.variable}`}>
+      <body
+        className={`${bodyFont.variable} ${headingFont.variable} ${terminalFont.variable}`}
+      >
         {/* [비즈니스 로직 의도]: 모든 페이지 최상단에 고정될 공통 헤더(네비게이션)입니다. */}
         <nav className="global-nav">
           <div className="nav-container">

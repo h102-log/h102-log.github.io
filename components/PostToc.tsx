@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from "react";
 
 type TocItem = {
   id: string;
@@ -13,22 +13,19 @@ type PostTocProps = {
 };
 
 export default function PostToc({ items }: PostTocProps) {
-  const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '');
-
-  const escapeId = (id: string) =>
-    id.replace(/([!"#$%&'()*+,./:;<=>?@[\\]^`{{|}}~\s])/g, '\\$1');
-
-  const headingSelector = useMemo(
-    () => items.map((item) => `#${escapeId(item.id)}`).join(', '),
-    [items],
-  );
+  const [activeId, setActiveId] = useState<string>(items[0]?.id ?? "");
 
   useEffect(() => {
-    if (!headingSelector) {
+    if (!items.length) {
       return;
     }
 
-    const headingElements = Array.from(document.querySelectorAll<HTMLElement>(headingSelector));
+    const headingElements = items
+      .map((item) => document.getElementById(item.id))
+      .filter(
+        (heading): heading is HTMLElement => heading instanceof HTMLElement,
+      );
+
     if (headingElements.length === 0) {
       return;
     }
@@ -36,7 +33,11 @@ export default function PostToc({ items }: PostTocProps) {
     const updateByScrollPosition = () => {
       const passedHeadings = headingElements
         .filter((heading) => heading.getBoundingClientRect().top <= 120)
-        .sort((left, right) => right.getBoundingClientRect().top - left.getBoundingClientRect().top);
+        .sort(
+          (left, right) =>
+            right.getBoundingClientRect().top -
+            left.getBoundingClientRect().top,
+        );
 
       if (passedHeadings[0]?.id) {
         setActiveId(passedHeadings[0].id);
@@ -49,7 +50,10 @@ export default function PostToc({ items }: PostTocProps) {
       (entries) => {
         const visibleEntries = entries
           .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
+          .sort(
+            (left, right) =>
+              left.boundingClientRect.top - right.boundingClientRect.top,
+          );
 
         if (visibleEntries[0]?.target instanceof HTMLElement) {
           setActiveId(visibleEntries[0].target.id);
@@ -60,19 +64,23 @@ export default function PostToc({ items }: PostTocProps) {
       },
       {
         root: null,
-        rootMargin: '-90px 0px -65% 0px',
+        rootMargin: "-90px 0px -65% 0px",
         threshold: [0, 1],
       },
     );
 
-    headingElements.forEach((headingElement) => observer.observe(headingElement));
-    window.addEventListener('scroll', updateByScrollPosition, { passive: true });
+    headingElements.forEach((headingElement) =>
+      observer.observe(headingElement),
+    );
+    window.addEventListener("scroll", updateByScrollPosition, {
+      passive: true,
+    });
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('scroll', updateByScrollPosition);
+      window.removeEventListener("scroll", updateByScrollPosition);
     };
-  }, [headingSelector]);
+  }, [items]);
 
   if (!items.length) {
     return null;
@@ -83,19 +91,20 @@ export default function PostToc({ items }: PostTocProps) {
       <h2 className="post-toc-title">목차</h2>
       <ol className="post-toc-list">
         {items.map((item) => {
-          const itemLevelClassName = item.level >= 4
-            ? 'post-toc-item-level-4'
-            : item.level === 3
-              ? 'post-toc-item-level-3'
-              : 'post-toc-item-level-2';
+          const itemLevelClassName =
+            item.level >= 4
+              ? "post-toc-item-level-4"
+              : item.level === 3
+                ? "post-toc-item-level-3"
+                : "post-toc-item-level-2";
           const isActive = activeId === item.id;
 
           return (
             <li key={item.id} className={`post-toc-item ${itemLevelClassName}`}>
               <a
                 href={`#${item.id}`}
-                className={`post-toc-link${isActive ? ' post-toc-link-active' : ''}`}
-                aria-current={isActive ? 'location' : undefined}
+                className={`post-toc-link${isActive ? " post-toc-link-active" : ""}`}
+                aria-current={isActive ? "location" : undefined}
               >
                 {item.text}
               </a>
