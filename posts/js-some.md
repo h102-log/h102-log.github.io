@@ -2,66 +2,87 @@
 title: "[JavaScript] js some()함수"
 date: "2026-03-22 23:23"
 description: "js some()함수 사용법"
-tag: "javascripts"
+tag: "javascript"
 group: "JavaScript 배열 메서드"
 ---
 
-# [JS] Array.prototype.some()
+## 서론
 
-## 정의
+배열 안에 특정 조건을 만족하는 데이터가 하나라도 있는지 확인해야 하는 상황은 실무에서 정말 자주 등장합니다.
+예를 들어 "관리자 권한을 가진 사용자가 한 명이라도 있는가?", "장바구니에 품절 상품이 하나라도 포함됐는가?" 같은 케이스입니다.
 
-`some()` 메서드는 배열 안의 요소 중 **단 하나라도** 주어진 판별 함수(조건)를 통과하면 `true`를 반환합니다.
-만약 조건을 만족하는 요소를 찾지 못하면 `false`를 반환합니다.
+이럴 때 가장 간결하게 사용할 수 있는 메서드가 바로 `Array.prototype.some()`입니다.
+이번 글에서는 `some()`의 기본 동작부터 실무에서 자주 놓치는 방어 코드 포인트까지 순서대로 정리해 보겠습니다.
 
-## 기본 사용법
+---
 
-가장 기본적인 형태의 코드입니다. 배열 내에 특정 값이 존재하는지 확인할 때 직관적으로 사용할 수 있습니다.
+## some() 기본 동작
+
+`some()`은 배열을 앞에서부터 순회하다가, 콜백 조건을 만족하는 요소를 하나라도 찾으면 즉시 `true`를 반환하고 종료합니다.
+끝까지 검사했는데 만족하는 값이 없으면 `false`를 반환합니다.
 
 ```javascript
-const arr = [1, 2, 3, 4];
+const numbers = [1, 2, 3, 4];
 
-// 배열 요소 중 1이 하나라도 존재하는지 확인합니다.
-const checkOne = arr.some((val) => val === 1);
+const hasOne = numbers.some((value) => value === 1);
+const hasTen = numbers.some((value) => value === 10);
 
-console.log(checkOne);
-// 출력: true
+console.log(hasOne); // true
+console.log(hasTen); // false
 ```
 
-## 실무 적용 시 주의사항
+---
 
-API 응답 지연이나 예외 상황으로 인해 데이터가 배열 형태가 아니거나 비어있는 상태로 넘어올 수 있습니다.
-`some()`은 배열이 아닌 타입에서 호출 시 런타임 에러를 발생시키므로, 배열 검사를 선행하는 것이 좋습니다.
+## 실습: 실무형 방어 코드
+
+실무에서는 API 응답이 항상 배열이라는 보장이 없습니다.
+`null`, `undefined`, 객체 등이 들어오면 `some()` 호출 시 런타임 에러가 발생할 수 있습니다.
+
+아래처럼 배열 여부를 먼저 검증한 뒤 처리하는 패턴이 안전합니다.
 
 ```javascript
-const arr = [1, 2, 3, 4];
-let checkOne = false;
+function hasBlockedUser(users) {
+  if (!Array.isArray(users) || users.length === 0) {
+    return false;
+  }
 
-// 배열 검사 및 비어있는 배열을 대비한 예외 처리
-// 데이터가 유효한 배열이고 길이가 0이 아닐 때만 some() 로직을 수행합니다.
-if (Array.isArray(arr) && arr.length !== 0) {
-  checkOne = arr.some((val) => val === 1);
+  return users.some((user) => user?.status === "blocked");
 }
 
-console.log(checkOne);
-// 출력: true
+console.log(hasBlockedUser([{ status: "active" }, { status: "blocked" }]));
+// true
+
+console.log(hasBlockedUser(null));
+// false
 ```
 
-## forEach, filter와의 차이점
+이 패턴을 사용하면 "데이터 이상치 때문에 화면이 깨지는 문제"를 상당히 줄일 수 있습니다.
 
-조건을 검사할 때 `forEach`나 `filter`를 사용할 수도 있지만, 목적에 따라 성능 차이가 발생합니다.
+---
 
-- **forEach의 한계:** 무조건 배열 전체를 탐색하기 때문에 데이터 크기가 커질수록 성능 낭비가 발생합니다.
-- **filter의 한계:** `filter` 역시 끝까지 순회하며, 조건에 맞는 요소를 모아 **새로운 배열을 생성하여 반환**하기 때문에
-  불필요한 메모리와 자원 낭비가 발생합니다.
-- **some의 장점:** `some()`은 조건을 만족하는 요소를 발견하는 즉시 순회를 멈추고 `true`를 반환하므로
-  성능상 훨씬 유리합니다.
+## forEach, filter와의 차이
 
-## 일반 for 반복문과의 차이점
+조건 검사 목적이라면 `forEach`나 `filter`보다 `some()`이 의도에 더 정확히 맞습니다.
 
-사실 `some`의 동작은 일반 `for` 문 안에서 `if` 조건에 맞을 때 `return true`를 해버리는 것과 완벽히 동일합니다.
+1. `forEach`는 중간에 멈출 수 없어 항상 끝까지 순회합니다.
+2. `filter`는 끝까지 순회하고, 추가로 새 배열까지 생성합니다.
+3. `some()`은 조건 만족 즉시 종료하므로 불필요한 연산이 줄어듭니다.
 
-콜백 함수를 호출하지 않는 순수 `for` 문이 브라우저 엔진 레벨에서는 아주 약간 더 빠를 수 있습니다. 하지만 대규모
-데이터 연산이 아닌 이상 그 성능 차이는 체감할 수 없는 수준입니다.
+즉, "하나라도 있으면 된다"라는 요구사항에는 `some()`이 가장 직관적입니다.
 
-그럼에도 `some`을 권장하는 이유는 **'가독성'** 때문입니다.
-명령형인 `for` 문과 달리, 선언적인 `some()`을 사용하면 코드를 보자마자 **"아, 이 로직은 배열 안에서 조건을 확인하고 boolean을 반환하려는 거구나"** 하고 파악할 수 있어 유지보수성이 향상됩니다.
+---
+
+## 일반 for문과 비교
+
+성능만 극단적으로 보면 콜백이 없는 `for` 문이 미세하게 유리할 수 있습니다.
+하지만 대부분의 서비스 코드에서는 그 차이보다 "코드를 읽고 의도를 즉시 파악할 수 있는가"가 더 중요합니다.
+
+`some()`은 이름 자체가 의도를 설명해 주기 때문에, 팀 단위 유지보수에서 특히 강점을 가집니다.
+
+---
+
+## 정리
+
+1. `some()`은 조건을 만족하는 요소가 하나라도 있으면 `true`를 반환합니다.
+2. 조건 검사 목적에서는 `forEach`/`filter`보다 `some()`이 더 적합합니다.
+3. 실무에서는 `Array.isArray()` 기반의 방어 코드를 함께 사용하는 습관이 중요합니다.

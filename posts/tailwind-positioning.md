@@ -6,9 +6,13 @@ tag: "css"
 group: "Tailwind CSS"
 ---
 
-# Tailwind CSS 포지셔닝 정렬 기법
+## 서론
 
-`position`, `top`, `right`, `bottom`, `left`와 `transform`을 조합하면 부모 요소 기준으로 자식 요소를 원하는 위치에 정확히 배치할 수 있습니다.
+Tailwind CSS에서 요소 위치를 정확하게 잡으려면
+`position`, `top/right/bottom/left`, `translate` 조합을 한 번에 이해하는 것이 가장 중요합니다.
+
+이번 글에서는 실무에서 자주 쓰는 배치 패턴을 예시와 함께 정리하고,
+각 클래스가 어떤 역할을 하는지 표로 빠르게 확인할 수 있도록 구성해 보겠습니다.
 
 ---
 
@@ -229,3 +233,11 @@ group: "Tailwind CSS"
 </div>
 
 > **Tip:** Tailwind v3.x부터 `translate` 유틸리티가 별도 클래스로 제공되므로 `transform` 클래스를 명시하지 않아도 됩니다.
+
+---
+
+## 마무리
+
+1. 기준점은 `absolute + top/right/bottom/left`로 잡고,
+2. 정확한 중앙 보정은 `-translate-x-1/2`, `-translate-y-1/2`로 처리하면 됩니다.
+3. 회전/리본 같은 응용도 결국 동일한 기준점 + 보정 개념의 확장입니다.
