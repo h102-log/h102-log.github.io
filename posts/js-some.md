@@ -1,5 +1,5 @@
 ---
-title: "js some()함수"
+title: "[JavaScript] js some()함수"
 date: "2026-03-22 23:23"
 description: "js some()함수 사용법"
 tag: "javascripts"
@@ -36,7 +36,7 @@ API 응답 지연이나 예외 상황으로 인해 데이터가 배열 형태가
 const arr = [1, 2, 3, 4];
 let checkOne = false;
 
-// 배열 검사 및 비어있는 배열을 대비한 예외 처리 
+// 배열 검사 및 비어있는 배열을 대비한 예외 처리
 // 데이터가 유효한 배열이고 길이가 0이 아닐 때만 some() 로직을 수행합니다.
 if (Array.isArray(arr) && arr.length !== 0) {
   checkOne = arr.some((val) => val === 1);
