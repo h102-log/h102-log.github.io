@@ -1,5 +1,5 @@
 ---
-title: "[React] useEffect 완전 정리"
+title: "[React] useEffect"
 date: "2026-03-26 19:41"
 description: "useEffect의 실행 시점, 의존성 배열, 정리 함수 정리"
 tag: "react"

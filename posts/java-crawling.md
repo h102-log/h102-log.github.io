@@ -78,6 +78,10 @@ public class JsoupCrawlerDemo {
 
 위 코드를 실행해 보면 다음과 같이 타이틀 값이 정상적으로 조회되는 것을 확인할 수 있습니다.
 
+```console
+title: 웹 데이터 수집(Scraping & API) 연습장
+```
+
 여기서 중요한 점 하나는 `htmlDocument.select()` 메서드의 반환값 처리입니다.
 
 이 메서드는 타겟 HTML에서 조건에 맞는 태그를 찾지 못하더라도
@@ -107,6 +111,10 @@ tableRows.stream().forEach(row -> {
 ```
 
 작성한 구문을 기존 코드에 추가하여 실행해 보겠습니다.
+
+```console
+데이터를 불러오는 중입니다...
+```
 
 `tr` 구조를 순회했으니 화면에 보이는 대로 직원 ID, 이름, 이메일, 소속사 정보가 출력되어야 할 것입니다.
 
@@ -192,6 +200,14 @@ public class DynamicTrCrawlingSample {
 2. waitFor로 렌더링 완료 시점을 기다린 뒤 tr을 조회한다.
 
 실행 하면 정상적으로 조회되는 것을 확인할 수 있습니다.
+
+```console
+1 | Leanne Graham | Sincere@april.biz | Romaguera-Crona
+2 | Ervin Howell | Shanna@melissa.tv | Deckow-Crist
+3 | Clementine Bauch | Nathan@yesenia.net | Romaguera-Jacobson
+4 | Patricia Lebsack | Julianne.OConner@kory.org | Robel-Corkery
+5 | Chelsey Dietrich | Lucio_Hettinger@annie.ca | Keebler LLC
+```
 
 ---
 
@@ -304,6 +320,14 @@ public class PlaywrightHolderUsageExample {
     }
 }
 
+```
+
+```console
+1 | Leanne Graham | Sincere@april.biz | Romaguera-Crona
+2 | Ervin Howell | Shanna@melissa.tv | Deckow-Crist
+3 | Clementine Bauch | Nathan@yesenia.net | Romaguera-Jacobson
+4 | Patricia Lebsack | Julianne.OConner@kory.org | Robel-Corkery
+5 | Chelsey Dietrich | Lucio_Hettinger@annie.ca | Keebler LLC
 ```
 
 ---
