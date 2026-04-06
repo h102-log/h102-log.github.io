@@ -3,6 +3,7 @@ title: "[React] useState"
 date: "2026-03-26 19:40"
 description: "useState의 동작 원리와 실무 사용 패턴 정리"
 tag: "react"
+category: "FrontEnd"
 group: "React"
 ---
 

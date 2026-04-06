@@ -2,7 +2,8 @@
 title: "[Tailwind CSS] inline-block 요소 사이 공백이 생기는 이유와 해결 방법"
 date: "2026-04-03 10:20"
 description: "inline-block 요소 사이의 약 4px 공백이 왜 생기는지, 그리고 실무에서 안전하게 제거하는 방법"
-tags: ["css", "layout"]
+tag: ["css", "layout"]
+category: "FrontEnd"
 group: "Tailwind CSS"
 ---
 

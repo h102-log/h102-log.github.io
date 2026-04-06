@@ -10,6 +10,7 @@ import {
 import { getAllPostsData } from "@/src/lib/posts";
 import { createAbsoluteUrl, siteConfig } from "@/src/lib/site";
 import NavSearch from "@/components/NavSearch";
+import NavCategories from "@/components/NavCategories";
 
 const headingFont = IBM_Plex_Sans_KR({
   subsets: ["latin"],
@@ -85,10 +86,15 @@ export default function RootLayout({
         {/* [비즈니스 로직 의도]: 모든 페이지 최상단에 고정될 공통 헤더(네비게이션)입니다. */}
         <nav className="global-nav">
           <div className="nav-container">
-            <Link href="/" className="nav-logo">
-              h102-log
-            </Link>
-            <NavSearch posts={allPosts} />
+            <div className="nav-top-row">
+              <Link href="/" className="nav-logo">
+                h102-log
+              </Link>
+              <NavSearch posts={allPosts} />
+            </div>
+            <div className="nav-bottom-row">
+              <NavCategories />
+            </div>
           </div>
         </nav>
 

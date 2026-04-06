@@ -3,6 +3,7 @@ title: "[Java] Java 크롤링"
 date: "2026-03-16 00:03"
 description: "Java로 크롤링 하는 방법"
 tag: "java"
+category: "BackEnd"
 ---
 
 ## 서론

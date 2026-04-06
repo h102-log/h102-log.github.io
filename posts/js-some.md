@@ -3,6 +3,7 @@ title: "[JavaScript] js some()함수"
 date: "2026-03-22 23:23"
 description: "js some()함수 사용법"
 tag: "javascript"
+category: "FrontEnd"
 group: "JavaScript 배열 메서드"
 ---
 

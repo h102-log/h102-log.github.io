@@ -3,6 +3,7 @@ title: "[Spring] Spring Framework란"
 date: "2026-04-02 10:00"
 description: "Spring Framework가 무엇인지"
 tag: "spring"
+category: "BackEnd"
 group: "Spring Framework 완전 정복"
 ---
 

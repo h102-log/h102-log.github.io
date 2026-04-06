@@ -3,6 +3,7 @@ title: "[Tailwind CSS] Tailwind CSS 포지셔닝 정렬 기법"
 date: "2026-03-31 15:00"
 description: "top-0, transform, translate 등을 활용한 우측 중앙·아래 중앙 정렬 기법 (Tailwind CSS)"
 tag: "css"
+category: "FrontEnd"
 group: "Tailwind CSS"
 ---
 

@@ -37,6 +37,7 @@ export type PostSummary = {
   date: string;
   description: string;
   tag?: string[];
+  category?: string[];
   group?: string;
   updatedAt?: string;
   draft?: boolean;
@@ -358,6 +359,7 @@ function parseValidFrontmatter(data: unknown): PostFrontmatter | null {
     description,
     // 하위 호환을 위해 기존 category 키도 tag로 병합해 처리합니다.
     tag: normalizeTags(frontmatter.tag ?? frontmatter.category),
+    category: normalizeTags(frontmatter.category),
     group: normalizeText(frontmatter.group),
     updatedAt: normalizeText(frontmatter.updatedAt),
     draft: typeof frontmatter.draft === "boolean" ? frontmatter.draft : false,
