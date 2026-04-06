@@ -2,8 +2,8 @@
 title: "[React Native] 우산 챙겼니? 프로젝트 계획서"
 date: "2026-04-06 21:00"
 description: "기상 알람 + 강수 예보를 결합한 React Native 앱 기획부터 기술 설계, 마일스톤까지 정리"
-tag: ["react-native", "expo", "zustand", "weather-api", "project-plan"]
-category: "Mobile"
+tag: ["react-native", "side-project"]
+category: "project"
 group: "Weather Alarm App"
 ---
 
