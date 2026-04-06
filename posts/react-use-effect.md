@@ -88,7 +88,7 @@ useEffect(() => {
 
 ---
 
-## 실무 예제: 검색 API 호출
+## 예제: 검색 API 호출
 
 ```jsx
 import { useEffect, useState } from "react";

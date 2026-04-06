@@ -1,7 +1,7 @@
 ---
 title: "[React] useState"
 date: "2026-03-26 19:40"
-description: "useState의 동작 원리와 실무 사용 패턴 정리"
+description: "useState의 동작 원리와 사용 패턴 정리"
 tag: "react"
 category: "FrontEnd"
 group: "React"
@@ -9,10 +9,10 @@ group: "React"
 
 ## 서론
 
-`useState`는 React에서 가장 기본이 되는 Hook이지만, 실무에서는 가장 자주 버그가 나는 지점이기도 합니다.
+`useState`는 React에서 가장 기본이 되는 Hook이지만, 가장 자주 버그가 나는 지점이기도 합니다.
 특히 상태 업데이트 타이밍과 이전 값 참조 방식을 정확히 이해하지 못하면, 겉보기엔 동작하는데 실제로는 불안정한 코드가 만들어집니다.
 
-이번 글에서는 `useState`를 실무 관점에서 정리해 보겠습니다.
+이번 글에서는 `useState`를 정리해 보겠습니다.
 
 ---
 
@@ -50,7 +50,7 @@ const [state, setState] = useState(initialValue);
 
 ---
 
-## 실무에서 자주 쓰는 패턴
+## 자주 쓰는 패턴
 
 ### 객체 상태 업데이트
 
