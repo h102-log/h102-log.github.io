@@ -1,7 +1,7 @@
 ---
-title: '[TypeScript] 타입 기초 정리'
-date: '2026-04-10 10:30'
-description: 'TypeScript의 교차 타입(&), type 재정의 제한, as 타입 단언, const/readonly, 리터럴 타입, as const를 예제로 정리합니다.'
+title: "[TypeScript] 타입 기초 정리"
+date: "2026-04-10 10:30"
+description: "TypeScript의 교차 타입(&), type 재정의 제한, as 타입 단언, const/readonly, 리터럴 타입, as const를 예제로 정리합니다."
 tag:
   - TypeScript
   - JavaScript
@@ -121,11 +121,3 @@ function 내함수(a: "kim") {}
 ```
 
 ## 마무리
-
-핵심만 기억하면 아래와 같습니다.
-
-- `A & B`는 두 타입을 모두 만족해야 하며, 충돌 키는 `never`가 될 수 있습니다.
-- `type` 별칭은 같은 이름으로 재선언할 수 없습니다.
-- `as`는 변환이 아니라 "타입 단언"입니다.
-- `const`는 변수 재할당 방지, `readonly`는 프로퍼티 변경 방지입니다.
-- `as const`는 리터럴 고정 + `readonly` 처리에 매우 유용합니다.
