@@ -2,10 +2,7 @@
 title: "[TypeScript] 타입 기초 정리"
 date: "2026-04-10 10:30"
 description: "TypeScript의 교차 타입(&), type 재정의 제한, as 타입 단언, const/readonly, 리터럴 타입, as const를 예제로 정리합니다."
-tag:
-  - TypeScript
-  - JavaScript
-  - 타입시스템
+tag: "TypeScript"
 ---
 
 # TypeScript 타입 기초 정리

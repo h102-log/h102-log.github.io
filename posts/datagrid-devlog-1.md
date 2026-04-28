@@ -3,6 +3,8 @@ title: "[React] DataGrid 컴포넌트 개발 #1"
 date: "2026-04-28"
 description: "리액트로 처음부터 만들어보는 대용량 DataGrid 개발 기록"
 series: "DataGrid 개발기"
+tag: "React"
+category: "Project"
 ---
 
 # 개발기 #1 — 프로젝트 개요와 설계 로드맵
