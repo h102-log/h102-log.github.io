@@ -5,14 +5,42 @@
     <link>https://h102-log.github.io</link>
     <description>개발자 bh102의 기술 기록과 학습 내용을 정리하는 블로그입니다.</description>
     <language>ko</language>
-    <lastBuildDate>Fri, 03 Apr 2026 01:20:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 16 Jun 2026 01:30:00 GMT</lastBuildDate>
     <atom:link href="https://h102-log.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Claude Code] .claude/rules로 프로젝트 규칙 모듈화하기</title>
+      <link>https://h102-log.github.io/posts/claude-code-rules</link>
+      <guid>https://h102-log.github.io/posts/claude-code-rules</guid>
+      <pubDate>Tue, 16 Jun 2026 01:30:00 GMT</pubDate>
+      <description>비대해진 CLAUDE.md를 .claude/rules 디렉터리로 분리해 토픽별로 관리하는 방법을 정리합니다. paths frontmatter로 특정 파일에만 규칙을 적용하는 경로 스코핑, 유저 레벨 규칙, symlink 공유까지 다룹니다.</description>
+    </item>
+    <item>
+      <title>[Claude Code] /rewind로 작업 안전하게 되돌리기 (체크포인트)</title>
+      <link>https://h102-log.github.io/posts/claude-code-rewind</link>
+      <guid>https://h102-log.github.io/posts/claude-code-rewind</guid>
+      <pubDate>Tue, 16 Jun 2026 01:00:00 GMT</pubDate>
+      <description>Claude Code의 체크포인트가 매 편집 전 코드 상태를 자동으로 저장하는 방식과, /rewind로 코드·대화를 원하는 지점으로 되돌리거나 대화를 압축하는 방법, 그리고 추적되지 않는 한계까지 정리합니다.</description>
+    </item>
+    <item>
+      <title>[Claude Code] 메모리 파일의 4가지 계층</title>
+      <link>https://h102-log.github.io/posts/claude-code-memory</link>
+      <guid>https://h102-log.github.io/posts/claude-code-memory</guid>
+      <pubDate>Mon, 15 Jun 2026 01:00:00 GMT</pubDate>
+      <description>Claude Code의 메모리 파일(CLAUDE.md, CLAUDE.local.md)이 관리형 정책·프로젝트·사용자·프로젝트 로컬 4계층으로 동작하는 방식과 우선순위를 정리합니다.</description>
+    </item>
+    <item>
+      <title>[TypeScript] 타입 기초 정리</title>
+      <link>https://h102-log.github.io/posts/ts</link>
+      <guid>https://h102-log.github.io/posts/ts</guid>
+      <pubDate>Fri, 10 Apr 2026 01:30:00 GMT</pubDate>
+      <description>TypeScript의 교차 타입(&amp;), type 재정의 제한, as 타입 단언, const/readonly, 리터럴 타입, as const를 예제로 정리합니다.</description>
+    </item>
     <item>
       <title>[Tailwind CSS] inline-block 요소 사이 공백이 생기는 이유와 해결 방법</title>
       <link>https://h102-log.github.io/posts/tailwind-inline-block-gap</link>
       <guid>https://h102-log.github.io/posts/tailwind-inline-block-gap</guid>
       <pubDate>Fri, 03 Apr 2026 01:20:00 GMT</pubDate>
-      <description>inline-block 요소 사이의 약 4px 공백이 왜 생기는지, 그리고 실무에서 안전하게 제거하는 방법</description>
+      <description>inline-block 요소 사이의 약 4px 공백이 왜 생기는지, 그리고 안전하게 제거하는 방법</description>
     </item>
     <item>
       <title>[Spring] Spring Framework란</title>
@@ -40,7 +68,7 @@
       <link>https://h102-log.github.io/posts/react-use-state</link>
       <guid>https://h102-log.github.io/posts/react-use-state</guid>
       <pubDate>Thu, 26 Mar 2026 10:40:00 GMT</pubDate>
-      <description>useState의 동작 원리와 실무 사용 패턴 정리</description>
+      <description>useState의 동작 원리와 사용 패턴 정리</description>
     </item>
     <item>
       <title>[JavaScript] js some()함수</title>
