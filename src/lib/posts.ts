@@ -622,7 +622,12 @@ export async function getPostData(id: string) {
   // 이 과정은 비동기(async)로 이루어지므로 await 키워드가 필요합니다.
   const tocItems: PostTocItem[] = [];
   const prettyCodeOptions: RehypePrettyCodeOptions = {
-    keepBackground: false,
+    // [WCAG AA]: github-dark-default (bg #0d1117, fg #e6edf3) keeps every token,
+    // including comments (#8b949e ~6.2:1), above the 4.5:1 contrast threshold.
+    // keepBackground:true emits the theme background inline so tokens render on
+    // the brightness they were tuned for.
+    theme: "github-dark-default",
+    keepBackground: true,
     defaultLang: "text",
   };
 

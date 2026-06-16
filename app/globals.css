@@ -622,7 +622,10 @@ a {
   border: 0;
   border-radius: 0 0 12px 12px;
   overflow-x: auto;
-  background: #0f172a;
+  /* Aligned to the github-dark-default theme background emitted inline by
+     rehype-pretty-code (keepBackground:true) so the CSS background does not
+     fight the theme background under which tokens meet WCAG AA contrast. */
+  background: #0d1117;
   padding: 0.95rem 1rem;
 }
 
@@ -635,6 +638,10 @@ a {
   display: grid;
   min-width: max-content;
   line-height: 1.65;
+  /* High-contrast fallback foreground (github-dark-default default fg ~16:1 on
+     #0d1117). Prevents untokenized/plain-text code from inheriting the
+     .post-content body color (#1e293b) and rendering dark-on-dark. */
+  color: #e6edf3;
 }
 
 .post-content pre [data-line] {
