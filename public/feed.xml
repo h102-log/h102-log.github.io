@@ -5,8 +5,15 @@
     <link>https://h102-log.github.io</link>
     <description>개발자 bh102의 기술 기록과 학습 내용을 정리하는 블로그입니다.</description>
     <language>ko</language>
-    <lastBuildDate>Tue, 16 Jun 2026 05:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 21 Jun 2026 01:00:00 GMT</lastBuildDate>
     <atom:link href="https://h102-log.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Claude Code] 자주 쓰는 키보드 단축키 총정리</title>
+      <link>https://h102-log.github.io/posts/claude-code-shortcuts</link>
+      <guid>https://h102-log.github.io/posts/claude-code-shortcuts</guid>
+      <pubDate>Sun, 21 Jun 2026 01:00:00 GMT</pubDate>
+      <description>Claude Code 터미널에서 입력·모드 전환·중단·세션 관리를 빠르게 하는 핵심 키보드 단축키 15가지를 한 번에 정리합니다.</description>
+    </item>
     <item>
       <title>[MoAI] /moai 명령어 완벽 가이드</title>
       <link>https://h102-log.github.io/posts/moai-command-guide</link>
