@@ -7,6 +7,7 @@ const CATEGORIES = [
   { key: "backend", label: "BackEnd" },
   { key: "frontend", label: "FrontEnd" },
   { key: "project", label: "Project" },
+  { key: "daily", label: "Daily" },
 ] as const;
 
 function normalizeCategoryKey(value: string): string {

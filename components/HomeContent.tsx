@@ -22,6 +22,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   backend: "BackEnd",
   frontend: "FrontEnd",
   project: "Project",
+  daily: "Daily",
 };
 
 function normalizeTagKey(tagValue: string): string {
