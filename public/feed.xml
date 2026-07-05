@@ -5,8 +5,22 @@
     <link>https://h102-log.github.io</link>
     <description>개발자 bh102의 기술 기록과 학습 내용을 정리하는 블로그입니다.</description>
     <language>ko</language>
-    <lastBuildDate>Sun, 21 Jun 2026 01:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jul 2026 01:00:00 GMT</lastBuildDate>
     <atom:link href="https://h102-log.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Claude Code] 에이전틱 엔지니어링: 에이전트를 위한 4가지 엔지니어링</title>
+      <link>https://h102-log.github.io/posts/agentic-engineering</link>
+      <guid>https://h102-log.github.io/posts/agentic-engineering</guid>
+      <pubDate>Mon, 06 Jul 2026 01:00:00 GMT</pubDate>
+      <description>AI 에이전트가 프로 수준으로 자율 개발하도록 환경을 설계하는 에이전틱 엔지니어링의 4대 기둥(Context·Agentic Validation·Agentic Tooling·Agentic Codebases)을 신입 개발자 비유로 정리합니다.</description>
+    </item>
+    <item>
+      <title>[회고] 다시 처음으로 — 하네스 구축 프로젝트를 시작하며</title>
+      <link>https://h102-log.github.io/posts/harness-project</link>
+      <guid>https://h102-log.github.io/posts/harness-project</guid>
+      <pubDate>Mon, 29 Jun 2026 12:00:00 GMT</pubDate>
+      <description>이것저것 맛만 보다 끝난 지난 시도들을 돌아보고, 기초부터 다시 다지기 위해 한 달짜리 하네스 구축 프로젝트를 시작합니다. 특정 결과물이 아니라, 누구나 같은 명령으로 비슷한 결과를 낼 수 있는 하네스 자체를 목표로 잡았습니다.</description>
+    </item>
     <item>
       <title>[Claude Code] 자주 쓰는 키보드 단축키 총정리</title>
       <link>https://h102-log.github.io/posts/claude-code-shortcuts</link>
