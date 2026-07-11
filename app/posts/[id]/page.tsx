@@ -13,6 +13,7 @@ import PostToc from "../../../components/PostToc";
 import PostShare from "../../../components/PostShare";
 import PostCodeCopy from "../../../components/PostCodeCopy";
 import PostGroupPanel from "../../../components/PostGroupPanel";
+import ViewCount from "../../../components/ViewCount";
 import { formatDateToYmd } from "../../../src/lib/date";
 import { createAbsoluteUrl, siteConfig } from "../../../src/lib/site";
 
@@ -130,6 +131,7 @@ export default async function Post(props: { params: Promise<{ id: string }> }) {
                   업데이트 {formatDateToYmd(postData.updatedAt)}
                 </p>
               ) : null}
+              <ViewCount />
             </div>
           </header>
 

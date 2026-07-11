@@ -430,6 +430,14 @@ a {
   letter-spacing: 0.02em;
 }
 
+.post-views {
+  font-family: var(--font-terminal), "Consolas", monospace;
+  font-size: 0.78rem;
+  color: var(--muted-text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .back-button {
   display: inline-flex;
   align-items: center;

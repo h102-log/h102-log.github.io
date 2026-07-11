@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 // 우리가 앞서 작성한 글로벌 스타일을 불러옵니다.
 import "./globals.css";
 import Link from "next/link";
+import Script from "next/script";
 import {
   IBM_Plex_Sans_KR,
   JetBrains_Mono,
@@ -11,6 +12,7 @@ import { getAllPostsData } from "@/src/lib/posts";
 import { createAbsoluteUrl, siteConfig } from "@/src/lib/site";
 import NavSearch from "@/components/NavSearch";
 import NavCategories from "@/components/NavCategories";
+import Analytics from "@/components/Analytics";
 
 const headingFont = IBM_Plex_Sans_KR({
   subsets: ["latin"],
@@ -105,6 +107,16 @@ export default function RootLayout({
         <footer className="global-footer">
           <p>© 2026 bh102. All rights reserved. Powered by Next.js</p>
         </footer>
+
+        {/* [비즈니스 로직 의도]: GoatCounter 방문자 통계. no_onload로 자동 집계를 끄고
+            Analytics 컴포넌트가 SPA 라우트 변경마다 수동으로 집계합니다. */}
+        <Script
+          data-goatcounter={`${siteConfig.goatcounter}/count`}
+          data-goatcounter-settings='{"no_onload": true}'
+          src="//gc.zgo.at/count.js"
+          strategy="afterInteractive"
+        />
+        <Analytics />
       </body>
     </html>
   );
